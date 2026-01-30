@@ -8,6 +8,7 @@ namespace Player
     {
         [Header("Movement Settings")]
         [SerializeField] private float moveSpeed = 5f;
+        [SerializeField] private float jumpHeight = 1.2f;
         [SerializeField] private float gravity = -9.81f;
 
         [Header("Look Settings")]
@@ -40,6 +41,7 @@ namespace Player
             _inputActions.Player.Move.canceled += OnMove;
             _inputActions.Player.Look.performed += OnLook;
             _inputActions.Player.Look.canceled += OnLook;
+            _inputActions.Player.Jump.performed += OnJump;
         }
 
         private void OnDisable()
@@ -48,6 +50,7 @@ namespace Player
             _inputActions.Player.Move.canceled -= OnMove;
             _inputActions.Player.Look.performed -= OnLook;
             _inputActions.Player.Look.canceled -= OnLook;
+            _inputActions.Player.Jump.performed -= OnJump;
             _inputActions.Player.Disable();
         }
 
@@ -65,6 +68,14 @@ namespace Player
         private void OnLook(InputAction.CallbackContext context)
         {
             _lookInput = context.ReadValue<Vector2>();
+        }
+
+        private void OnJump(InputAction.CallbackContext context)
+        {
+            if (_characterController.isGrounded)
+            {
+                _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            }
         }
 
         private void HandleMovement()
