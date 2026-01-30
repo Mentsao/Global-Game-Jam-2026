@@ -5,6 +5,10 @@ TagManager:
   serializedVersion: 3
   tags:
   - Ground
+  - Police
+  - Weapon
+  - Item
+  - Document
   layers:
   - Default
   - TransparentFX
@@ -16,6 +20,10 @@ TagManager:
   - 
   - 
   - 
+  - Weapon
+  - Item
+  - Document
+  - Player
   - 
   - 
   - 
