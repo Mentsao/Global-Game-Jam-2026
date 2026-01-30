@@ -963,9 +963,21 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1142410854268160281, guid: ee2df9aed815664438976919a41cac56, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 2699994643817278021, guid: ee2df9aed815664438976919a41cac56, type: 3}
       propertyPath: m_Name
       value: Balisong
+      objectReference: {fileID: 0}
+    - target: {fileID: 2699994643817278021, guid: ee2df9aed815664438976919a41cac56, type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 2699994643817278021, guid: ee2df9aed815664438976919a41cac56, type: 3}
+      propertyPath: m_TagString
+      value: Weapon
       objectReference: {fileID: 0}
     - target: {fileID: 3329178814946210047, guid: ee2df9aed815664438976919a41cac56, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1006,6 +1018,10 @@ PrefabInstance:
     - target: {fileID: 3329178814946210047, guid: ee2df9aed815664438976919a41cac56, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: -36.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 7401732611253720610, guid: ee2df9aed815664438976919a41cac56, type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2800,6 +2816,10 @@ PrefabInstance:
     - target: {fileID: 7758887105861955139, guid: aa348a3a15edfc0458d780f74eb79801, type: 3}
       propertyPath: m_Name
       value: Document
+      objectReference: {fileID: 0}
+    - target: {fileID: 7758887105861955139, guid: aa348a3a15edfc0458d780f74eb79801, type: 3}
+      propertyPath: m_Layer
+      value: 12
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -22,7 +22,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a4f682ffce828d54db12059da05c7309, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 32.45
+      value: 69.29
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: a4f682ffce828d54db12059da05c7309, type: 3}
       propertyPath: m_LocalPosition.y
@@ -70,11 +70,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: a4f682ffce828d54db12059da05c7309, type: 3}
       propertyPath: m_Layer
-      value: 7
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: a4f682ffce828d54db12059da05c7309, type: 3}
       propertyPath: m_TagString
-      value: Item
+      value: Weapon
       objectReference: {fileID: 0}
     - target: {fileID: 2668579479181016555, guid: a4f682ffce828d54db12059da05c7309, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
@@ -82,11 +82,11 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 628565de8b6c85a47b8d8f0ad4f62ce6, type: 2}
     - target: {fileID: 2766212503428324877, guid: a4f682ffce828d54db12059da05c7309, type: 3}
       propertyPath: m_Layer
-      value: 7
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 5692861757112009014, guid: a4f682ffce828d54db12059da05c7309, type: 3}
       propertyPath: m_Layer
-      value: 7
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 8032750206264916975, guid: a4f682ffce828d54db12059da05c7309, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
