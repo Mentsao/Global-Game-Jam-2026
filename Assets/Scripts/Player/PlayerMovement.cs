@@ -54,6 +54,25 @@ namespace Player
             _inputActions.Player.Disable();
         }
 
+        public void SetControlActive(bool active)
+        {
+            if (active)
+            {
+                _inputActions.Player.Enable();
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+            else
+            {
+                _inputActions.Player.Disable();
+                // Optionally unlock cursor if needed for QTE UI, but QTE is keyboard mashing so keeps locked usually.
+                // If specific actions need to remain enabled (like Pause), we might need to be more granular. 
+                // For now, disabling all Player movement/look is what was asked.
+                _moveInput = Vector2.zero;
+                _lookInput = Vector2.zero;
+            }
+        }
+
         private void Update()
         {
             HandleMovement();
