@@ -111,5 +111,17 @@ namespace Player
             
             transform.Rotate(Vector3.up * mouseX);
         }
+
+        private void OnControllerColliderHit(ControllerColliderHit hit)
+        {
+            // Debug.Log($"Player hit: {hit.collider.name}"); // Uncomment if needed
+
+            // Check if we hit a Police NPC
+            PoliceNPC police = hit.collider.GetComponent<PoliceNPC>();
+            if (police != null)
+            {
+                police.CheckForDocument(this.gameObject);
+            }
+        }
     }
 }

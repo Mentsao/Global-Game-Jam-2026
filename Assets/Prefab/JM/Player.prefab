@@ -15,9 +15,9 @@ GameObject:
   - component: {fileID: 7712808793913885139}
   - component: {fileID: 6187237251269097085}
   - component: {fileID: 462147440955213857}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -179,8 +179,10 @@ MonoBehaviour:
   pickupRange: 3
   pickupLayer:
     serializedVersion: 2
-    m_Bits: 192
-  itemTag: Item
+    m_Bits: 448
+  itemTags:
+  - Item
+  - Document
 --- !u!1 &2109172963043345129
 GameObject:
   m_ObjectHideFlags: 0
@@ -193,7 +195,8 @@ GameObject:
   - component: {fileID: 2586500130854723445}
   - component: {fileID: 5176681974027372527}
   - component: {fileID: 774244954260909818}
-  m_Layer: 0
+  - component: {fileID: 6757437604757116360}
+  m_Layer: 9
   m_Name: Main Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
@@ -297,7 +300,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -318,6 +321,31 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &6757437604757116360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2109172963043345129}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 683ad429748e7f142a3da8ea6217536e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UI.VignetteEffect
+  darkenSpeed: 0.5
+  recoverySpeed: 1
+  vignetteColor: {r: 0, g: 0, b: 0, a: 1}
+  intensityThreshold: 0.44
+  redPulseSpeed: 5
+  wobbleStrength: 10
+  cameraShakeStrength: 0.08
+  pulseColor: {r: 1, g: 0, b: 0, a: 0.5}
+  enableBlur: 1
+  maxChromaticAberration: 100
+  maxMotionBlur: 100
+  maxLensDistortion: 0.5
+  lensDistortionScale: 1
 --- !u!1 &8525378630689334571
 GameObject:
   m_ObjectHideFlags: 0
@@ -327,7 +355,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 463178522080104352}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Weapon Hold
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -37,6 +37,13 @@ namespace UI
         [SerializeField] private bool enableBlur = true;
         [SerializeField] private float maxChromaticAberration = 1.0f;
         [SerializeField] private float maxMotionBlur = 1.0f;
+        
+        [Header("Distortion")]
+        [Tooltip("Strength of lens distortion (-1 to 1). Negative is Pinch, Positive is FishEye.")]
+        [SerializeField] private float maxLensDistortion = -0.5f;
+        [Tooltip("Scale multiplier to prevent black edges during distortion (usually 0.8 - 1.2)")]
+        [SerializeField] private float lensDistortionScale = 1.0f;
+
 
         private Transform _playerTransform;
         private float _currentAlpha = 0f;
@@ -48,6 +55,7 @@ namespace UI
         private Volume _volume;
         private ChromaticAberration _chromaticAberration;
         private MotionBlur _motionBlur;
+        private LensDistortion _lensDistortion;
 
         private void Start()
         {
@@ -85,6 +93,7 @@ namespace UI
             {
                 _volume = gameObject.AddComponent<Volume>();
             }
+            _volume.isGlobal = true;
 
             // Create a temporary profile so we don't mess up assets
             VolumeProfile profile = ScriptableObject.CreateInstance<VolumeProfile>();
@@ -106,6 +115,17 @@ namespace UI
             }
             _motionBlur.intensity.overrideState = true;
             _motionBlur.intensity.value = 0f;
+
+            profile.TryGet(out _lensDistortion);
+            if (_lensDistortion == null)
+            {
+                _lensDistortion = profile.Add<LensDistortion>(true);
+            }
+            _lensDistortion.intensity.overrideState = true;
+            _lensDistortion.intensity.value = 0f;
+            _lensDistortion.scale.overrideState = true;
+            _lensDistortion.scale.value = 1f;
+
 
             // Important: Set priority or weight to ensure it shows
             _volume.weight = 1.0f;
@@ -167,17 +187,24 @@ namespace UI
                 }
             }
 
-            // 2. Post Processing (Vision Blur)
+            // 2. Post Processing (Vision Blur & Distortion)
             if (enableBlur && _volume != null)
             {
-                // Chromatic aberration starts early (at 0.2 alpha)
-                float blurRatio = Mathf.Clamp01((_currentAlpha - 0.2f) / 0.8f);
+                // Effect starts early (at 0.2 alpha)
+                float effectRatio = Mathf.Clamp01((_currentAlpha - 0.2f) / 0.8f);
                 
                 if (_chromaticAberration != null)
-                    _chromaticAberration.intensity.value = blurRatio * maxChromaticAberration;
+                    _chromaticAberration.intensity.value = effectRatio * maxChromaticAberration;
 
                 if (_motionBlur != null)
-                    _motionBlur.intensity.value = blurRatio * maxMotionBlur;
+                    _motionBlur.intensity.value = effectRatio * maxMotionBlur;
+                
+                if (_lensDistortion != null)
+                {
+                    _lensDistortion.intensity.value = effectRatio * maxLensDistortion;
+                    // Interpolate scale to prevent black borders if using pinch
+                    _lensDistortion.scale.value = Mathf.Lerp(1f, lensDistortionScale, effectRatio);
+                }
             }
         }
 

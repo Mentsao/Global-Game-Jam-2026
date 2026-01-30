@@ -9,13 +9,15 @@ namespace Player
         [SerializeField] private Transform holdPosition;
         [SerializeField] private float pickupRange = 3f;
         [SerializeField] private LayerMask pickupLayer = ~0; // Default to Everything
-        [SerializeField] private string itemTag = "Item";
+        [SerializeField] private System.Collections.Generic.List<string> itemTags = new System.Collections.Generic.List<string> { "Item" };
 
         private InputSystem_Actions _inputActions;
         private Transform _heldItem;
         private Rigidbody _heldRigidbody;
         private Collider _heldCollider;
         private Transform _cameraTransform;
+
+        public Transform HeldItem => _heldItem;
 
         private void Awake()
         {
@@ -62,7 +64,7 @@ namespace Player
 
             foreach (Collider collider in colliders)
             {
-                if (collider.CompareTag(itemTag))
+                if (itemTags.Contains(collider.tag))
                 {
                     float distance = Vector3.Distance(_cameraTransform.position, collider.transform.position);
                     if (distance < closestDistance)

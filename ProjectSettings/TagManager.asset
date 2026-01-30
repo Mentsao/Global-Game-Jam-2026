@@ -8,6 +8,7 @@ TagManager:
   - Police
   - Weapon
   - Item
+  - Document
   layers:
   - Default
   - TransparentFX
@@ -17,8 +18,8 @@ TagManager:
   - UI
   - Weapon
   - Item
-  - 
-  - 
+  - Document
+  - Player
   - 
   - 
   - 
