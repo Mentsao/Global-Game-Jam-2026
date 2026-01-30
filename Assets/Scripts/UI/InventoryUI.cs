@@ -49,11 +49,11 @@ namespace UI
             {
                 SetImageState(mask2Image, isHeld);
             }
-            else if (lowerName.Contains("paper"))
+            else if (lowerName.Contains("paper") || lowerName.Contains("document"))
             {
                 SetImageState(paperImage, isHeld);
             }
-            else if (lowerName.Contains("knife") || lowerName.Contains("weapon"))
+            else if (lowerName.Contains("knife") || lowerName.Contains("weapon") || lowerName.Contains("balisong"))
             {
                 SetImageState(knifeImage, isHeld);
             }
