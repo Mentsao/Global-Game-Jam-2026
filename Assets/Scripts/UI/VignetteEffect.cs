@@ -98,6 +98,12 @@ namespace UI
             // Create a temporary profile so we don't mess up assets
             VolumeProfile profile = ScriptableObject.CreateInstance<VolumeProfile>();
             _volume.profile = profile;
+            
+            Debug.Log($"[VignetteEffect] Volume created on: {gameObject.name} | Layer: {LayerMask.LayerToName(gameObject.layer)}");
+            if (gameObject.layer == LayerMask.NameToLayer("UI"))
+            {
+                Debug.LogWarning("[VignetteEffect] WARNING: Script is on UI Layer! Camera Volume Mask might ignore this. Please move script to an empty GameObject on 'Default' layer or change this object's layer.");
+            }
 
             // Add Overrides
             profile.TryGet(out _chromaticAberration);
@@ -157,6 +163,20 @@ namespace UI
                 }
             }
 
+            // Also check for Zombies
+            if (!isAnyEnemyInRange)
+            {
+                foreach (var zombie in ZombieNPCDetect.AllZombies)
+                {
+                    if (zombie == null) continue;
+                    if (Vector3.Distance(_playerTransform.position, zombie.transform.position) <= zombie.rangeOfView)
+                    {
+                        isAnyEnemyInRange = true;
+                        break;
+                    }
+                }
+            }
+
             if (isAnyEnemyInRange)
             {
                 _currentAlpha += darkenSpeed * Time.deltaTime;
@@ -193,14 +213,26 @@ namespace UI
                 // Effect starts early (at 0.2 alpha)
                 float effectRatio = Mathf.Clamp01((_currentAlpha - 0.2f) / 0.8f);
                 
+                if (effectRatio > 0 && _chromaticAberration != null)
+                {
+                     // Debug.Log($"Applying Effects! Ratio: {effectRatio}");
+                }
+
                 if (_chromaticAberration != null)
+                {
+                    _chromaticAberration.active = true;
                     _chromaticAberration.intensity.value = effectRatio * maxChromaticAberration;
+                }
 
                 if (_motionBlur != null)
+                {
+                    _motionBlur.active = true;
                     _motionBlur.intensity.value = effectRatio * maxMotionBlur;
+                }
                 
                 if (_lensDistortion != null)
                 {
+                    _lensDistortion.active = true;
                     _lensDistortion.intensity.value = effectRatio * maxLensDistortion;
                     // Interpolate scale to prevent black borders if using pinch
                     _lensDistortion.scale.value = Mathf.Lerp(1f, lensDistortionScale, effectRatio);

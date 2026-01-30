@@ -51,8 +51,12 @@ namespace Player
             UpdateHeldItemRotation();
         }
 
+        public bool preventRotationUpdate = false;
+
         private void UpdateHeldItemRotation()
         {
+            if (preventRotationUpdate) return;
+
             if (_heldItem != null)
             {
                 // Check if the item has specific settings
@@ -123,19 +127,38 @@ namespace Player
             if (bestTarget != null)
             {
                 string lowerName = bestTarget.name.ToLower();
-                // Check if it's a "consumable" inventory item (Masks, Paper/Document)
-                if (lowerName.Contains("mask") || lowerName.Contains("paper") || lowerName.Contains("document"))
+                // 1. Check for Document SPECIFICALLY
+                // (We want to HOLD the document, not consume it)
+                if (lowerName.Contains("document"))
+                {
+                     if (_heldItem == null)
+                    {
+                        Debug.Log($"Picking up Document: {bestTarget.name}");
+                        PickupItem(bestTarget);
+                        return true;
+                    }
+                    else
+                    {
+                        Debug.Log("Cannot pick up Document: Hands Full!");
+                        return false;
+                    }
+                }
+
+                // 2. Check for "consumable" inventory item (Masks, Paper)
+                // Note: If the document was named "Paper Document", the above check catches it first.
+                if (lowerName.Contains("mask") || lowerName.Contains("paper"))
                 {
                     if (UI.InventoryUI.Instance != null)
                     {
                         UI.InventoryUI.Instance.UpdateItemStatus(bestTarget.name, true);
                     }
+                    Debug.Log($"Consumed Item: {bestTarget.name}");
                     Destroy(bestTarget.gameObject);
                     return true;
                 }
                 else
                 {
-                    // Physical item (e.g. Balisong/Knife/Weapon)
+                    // 3. Physical item (e.g. Balisong/Knife/Weapon)
                     // If hands are empty, pickup. If full, return false (so we can drop or do nothing)
                     if (_heldItem == null)
                     {
@@ -190,6 +213,25 @@ namespace Player
             _heldItem.SetParent(holdPosition);
             _heldItem.localPosition = Vector3.zero;
             UpdateHeldItemRotation();
+        }
+
+        public void ConsumeHeldItem()
+        {
+            if (_heldItem == null) return;
+
+            // Update UI (optional: remove item from UI)
+            if (UI.InventoryUI.Instance != null)
+            {
+                // We pass false to indicate it's no longer held/available
+                UI.InventoryUI.Instance.UpdateItemStatus(_heldItem.name, false);
+            }
+
+            Destroy(_heldItem.gameObject);
+
+            // Clear ref
+            _heldItem = null;
+            _heldRigidbody = null;
+            _heldCollider = null;
         }
 
         private void DropItem()

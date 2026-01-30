@@ -141,6 +141,7 @@ public class PoliceNPC : EnemyPresence
                     if (tagMatch && layerMatch)
                     {
                         Debug.Log("Police: Document verified. Moving along.");
+                        pickup.ConsumeHeldItem(); // Consume the document
                         StartPatrol();
                     }
                     else
