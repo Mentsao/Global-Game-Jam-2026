@@ -7,9 +7,10 @@ namespace Player
     {
         [Header("Pickup Settings")]
         [SerializeField] private Transform holdPosition;
+        [SerializeField] private Vector3 holdRotation = Vector3.zero;
         [SerializeField] private float pickupRange = 3f;
         [SerializeField] private LayerMask pickupLayer = ~0; // Default to Everything
-        [SerializeField] private System.Collections.Generic.List<string> itemTags = new System.Collections.Generic.List<string> { "Item" };
+        [SerializeField] private System.Collections.Generic.List<string> itemTags = new System.Collections.Generic.List<string> { "Item", "Document" };
 
         private InputSystem_Actions _inputActions;
         private Transform _heldItem;
@@ -40,6 +41,37 @@ namespace Player
             if (_heldItem != null) DropItem();
         }
 
+        private void Update()
+        {
+            UpdateHeldItemRotation();
+        }
+
+        private void OnValidate()
+        {
+            UpdateHeldItemRotation();
+        }
+
+        private void UpdateHeldItemRotation()
+        {
+            if (_heldItem != null)
+            {
+                // Check if the item has specific settings
+                Interaction.PickupableItem itemSettings = _heldItem.GetComponent<Interaction.PickupableItem>();
+                
+                if (itemSettings != null)
+                {
+                    _heldItem.localRotation = Quaternion.Euler(itemSettings.holdRotation);
+                    _heldItem.localPosition = itemSettings.holdPositionOffset;
+                }
+                else
+                {
+                    // Fallback to global setting
+                    _heldItem.localRotation = Quaternion.Euler(holdRotation);
+                    _heldItem.localPosition = Vector3.zero;
+                }
+            }
+        }
+
         private void OnInteract(InputAction.CallbackContext context)
         {
             Debug.Log("Interact Pressed");
@@ -64,6 +96,7 @@ namespace Player
 
             foreach (Collider collider in colliders)
             {
+                Debug.Log($"Found object in range: {collider.name} (Tag: {collider.tag})"); // DEBUG
                 if (itemTags.Contains(collider.tag))
                 {
                     float distance = Vector3.Distance(_cameraTransform.position, collider.transform.position);
@@ -118,7 +151,7 @@ namespace Player
             // Parent to Hold Position
             _heldItem.SetParent(holdPosition);
             _heldItem.localPosition = Vector3.zero;
-            _heldItem.localRotation = Quaternion.identity;
+            UpdateHeldItemRotation();
         }
 
         private void DropItem()
