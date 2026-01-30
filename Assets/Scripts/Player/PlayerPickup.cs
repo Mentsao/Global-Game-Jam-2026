@@ -148,6 +148,12 @@ namespace Player
                 _heldCollider.enabled = false;
             }
 
+            // Update UI
+            if (UI.InventoryUI.Instance != null)
+            {
+                UI.InventoryUI.Instance.UpdateItemStatus(_heldItem.name, true);
+            }
+
             // Parent to Hold Position
             _heldItem.SetParent(holdPosition);
             _heldItem.localPosition = Vector3.zero;
@@ -170,6 +176,12 @@ namespace Player
             if (_heldCollider != null)
             {
                 _heldCollider.enabled = true;
+            }
+
+            // Update UI
+            if (UI.InventoryUI.Instance != null)
+            {
+                UI.InventoryUI.Instance.UpdateItemStatus(_heldItem.name, false);
             }
 
             // Unparent
