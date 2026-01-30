@@ -75,17 +75,29 @@ namespace Player
         private void OnInteract(InputAction.CallbackContext context)
         {
             Debug.Log("Interact Pressed");
+
+            // 1. Try to find an item to Interact/Collect first
+            if (TryPickupItem()) 
+            {
+                return;
+            }
+
+            // 2. If nothing collected/picked up, try to Drop
             if (_heldItem != null)
             {
+                // Prevent dropping if it's the Balisong
+                string heldName = _heldItem.name.ToLower();
+                if (heldName.Contains("balisong"))
+                {
+                    Debug.Log("Cannot drop Balisong!");
+                    return;
+                }
+                
                 DropItem();
-            }
-            else
-            {
-                TryPickupItem();
             }
         }
 
-        private void TryPickupItem()
+        private bool TryPickupItem()
         {
             // Use OverlapSphere to find items near the center of the screen
             Vector3 sphereCenter = _cameraTransform.position + _cameraTransform.forward * (pickupRange * 0.5f);
@@ -110,12 +122,32 @@ namespace Player
 
             if (bestTarget != null)
             {
-                PickupItem(bestTarget);
+                string lowerName = bestTarget.name.ToLower();
+                // Check if it's a "consumable" inventory item (Masks, Paper/Document)
+                if (lowerName.Contains("mask") || lowerName.Contains("paper") || lowerName.Contains("document"))
+                {
+                    if (UI.InventoryUI.Instance != null)
+                    {
+                        UI.InventoryUI.Instance.UpdateItemStatus(bestTarget.name, true);
+                    }
+                    Destroy(bestTarget.gameObject);
+                    return true;
+                }
+                else
+                {
+                    // Physical item (e.g. Balisong/Knife/Weapon)
+                    // If hands are empty, pickup. If full, return false (so we can drop or do nothing)
+                    if (_heldItem == null)
+                    {
+                        PickupItem(bestTarget);
+                        return true;
+                    }
+                    
+                    return false;
+                }
             }
-            else
-            {
-                Debug.Log("No item found in range.");
-            }
+            
+            return false;
         }
 
         private void OnDrawGizmosSelected()
