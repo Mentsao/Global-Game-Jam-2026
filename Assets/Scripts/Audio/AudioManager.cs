@@ -51,6 +51,12 @@ public class AudioManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            
+            // Load saved volume settings
+            masterVolume = PlayerPrefs.GetFloat("Vol_Master", 1.0f);
+            musicVolume = PlayerPrefs.GetFloat("Vol_Music", 1.0f);
+            sfxVolume = PlayerPrefs.GetFloat("Vol_SFX", 1.0f);
+            
             InitializeSources();
         }
         else

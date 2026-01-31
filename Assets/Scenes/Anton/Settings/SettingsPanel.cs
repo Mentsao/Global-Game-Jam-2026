@@ -9,12 +9,13 @@ public class SettingsPanel : MonoBehaviour
     public static SettingsPanel Instance { get; private set; }
 
     [Header("UI refs")]
-    [SerializeField] Toggle fullscreenToggle;
-    [SerializeField] Slider masterSlider, musicSlider, sfxSlider;
-    [SerializeField] Button backButton;
+    [SerializeField] private GameObject panelContent; // The actual UI container (Active/Inactive)
+    [SerializeField] private Toggle fullscreenToggle;
+    [SerializeField] private Slider masterSlider, musicSlider, sfxSlider;
+    [SerializeField] private Button backButton;
 
     [Header("Audio")]
-    [SerializeField] AudioMixer mixer;
+    [SerializeField] private AudioMixer mixer;
 
     private GameObject previousPanel;
 
@@ -30,6 +31,10 @@ public class SettingsPanel : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
+        // Force hide at start if not already
+        if (panelContent != null)
+            panelContent.SetActive(false);
     }
 
     private void Start()
@@ -39,20 +44,24 @@ public class SettingsPanel : MonoBehaviour
 
         if (backButton != null)
             backButton.onClick.AddListener(CloseSettings);
-
-        gameObject.SetActive(false);
     }
 
     private void Update()
     {
-        if (gameObject.activeSelf && Input.GetKeyDown(KeyCode.Escape))
-            CloseSettings();
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (panelContent != null && panelContent.activeSelf)
+                CloseSettings();
+        }
     }
 
     public void OpenFrom(GameObject caller)
     {
         previousPanel = caller;
-        gameObject.SetActive(true);
+        if (panelContent != null)
+            panelContent.SetActive(true);
+
+        Time.timeScale = 0f; // Pause game while in settings
 
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.None;
@@ -61,10 +70,20 @@ public class SettingsPanel : MonoBehaviour
     public void CloseSettings()
     {
         PlayerPrefs.Save();
-        gameObject.SetActive(false);
+        if (panelContent != null)
+            panelContent.SetActive(false);
 
         if (previousPanel != null)
+        {
             previousPanel.SetActive(true);
+            // Don't change timeScale or cursor yet, assume previous panel handles its own state
+        }
+        else
+        {
+            Time.timeScale = 1f; // Resume game
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
 
         previousPanel = null;
     }
@@ -102,16 +121,28 @@ public class SettingsPanel : MonoBehaviour
 
     private void SetVol(string mixerParam, float sliderVal, string prefKey)
     {
-        float dB = Mathf.Log10(Mathf.Clamp(sliderVal, 0.001f, 1f)) * 20f;
-        mixer.SetFloat(mixerParam, dB);
+        if (mixer != null)
+        {
+            float dB = Mathf.Log10(Mathf.Clamp(sliderVal, 0.001f, 1f)) * 20f;
+            mixer.SetFloat(mixerParam, dB);
+        }
+        
         PlayerPrefs.SetFloat(prefKey, sliderVal);
+
+        // Sync with AudioManager
+        if (AudioManager.Instance != null)
+        {
+            if (prefKey == "Vol_Master") AudioManager.Instance.masterVolume = sliderVal;
+            else if (prefKey == "Vol_Music") AudioManager.Instance.musicVolume = sliderVal;
+            else if (prefKey == "Vol_SFX") AudioManager.Instance.sfxVolume = sliderVal;
+        }
     }
 
     public void InitializeSlidersFromPrefs()
     {
-        masterSlider.value = PlayerPrefs.GetFloat("Vol_Master", 0.8f);
-        musicSlider.value = PlayerPrefs.GetFloat("Vol_Music", 0.8f);
-        sfxSlider.value = PlayerPrefs.GetFloat("Vol_SFX", 0.8f);
+        masterSlider.value = PlayerPrefs.GetFloat("Vol_Master", 1.0f);
+        musicSlider.value = PlayerPrefs.GetFloat("Vol_Music", 1.0f);
+        sfxSlider.value = PlayerPrefs.GetFloat("Vol_SFX", 1.0f);
     }
 
     private void OnEnable()
