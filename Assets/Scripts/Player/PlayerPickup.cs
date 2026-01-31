@@ -25,12 +25,15 @@ namespace Player
 
         public Transform HeldItem => _heldItem;
 
-        public bool isWeapon = false;       
+        [Header("Tutorial Checks")]
+        public bool isWeapon = false;
+        PlayerDeath playerDeath;
 
         private void Awake()
         {
             _inputActions = new InputSystem_Actions();
             _cameraTransform = Camera.main.transform;
+            playerDeath = GetComponent<PlayerDeath>();
         }
 
         private void OnEnable()
@@ -171,6 +174,7 @@ namespace Player
                 {
                     // Pickup Document
                     PickupToSlot(bestTarget, 2);
+                    playerDeath.DocumentFound();
                     return true;
                 }
                 else

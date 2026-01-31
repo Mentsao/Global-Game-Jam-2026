@@ -7,7 +7,7 @@ using UnityEngine;
 public class Tutorial : MonoBehaviour
 {
     [Header("Papers Tutorial")]
-    [SerializeField] private GameObject papersTutorial;
+    [SerializeField] private TextMeshProUGUI dialogueText;
 
     [Header("Pick Up Knife Tutorial")]
     public bool startFade = false;
@@ -29,11 +29,15 @@ public class Tutorial : MonoBehaviour
     {
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         playerPickup = player.GetComponent<PlayerPickup>();
+
+        FindPapersTutorial();
     }
 
     // Update is called once per frame
     void Update()
     {
+
+        //Knife Pick Up
         if (!playerPickup.isWeapon && startFade)
         {
             pickUpKnifeTutorial.SetActive(true);
@@ -71,11 +75,12 @@ public class Tutorial : MonoBehaviour
     }
 
     // On Death Tutorials
-    public void FindPapersTutorial(bool hasPapers)
+    public void FindPapersTutorial()
     {
-        if (!hasPapers)
+        if (PlayerDeath.documentCount <= 0 && PlayerDeath.deathCount > 0)
         {
-            papersTutorial.SetActive(true);
+            dialogueText.gameObject.SetActive(true);
+            dialogueText.text = "I feel like I'm missing something...";
         }
     }
 
