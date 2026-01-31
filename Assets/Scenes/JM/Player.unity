@@ -1346,11 +1346,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1007246993073906416, guid: 4237c7466f469254f978921896cf9c7e, type: 3}
   m_PrefabInstance: {fileID: 7320061982133484343}
   m_PrefabAsset: {fileID: 0}
---- !u!82 &838895850 stripped
-AudioSource:
-  m_CorrespondingSourceObject: {fileID: 8502948873988215261, guid: 4237c7466f469254f978921896cf9c7e, type: 3}
-  m_PrefabInstance: {fileID: 7320061982133484343}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &877603976
 GameObject:
   m_ObjectHideFlags: 0
@@ -3178,14 +3173,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: -2994046734117213320, guid: aa348a3a15edfc0458d780f74eb79801, type: 3}
-      propertyPath: holdPositionOffset.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -2994046734117213320, guid: aa348a3a15edfc0458d780f74eb79801, type: 3}
-      propertyPath: holdPositionOffset.z
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 6982490487449122041, guid: aa348a3a15edfc0458d780f74eb79801, type: 3}
       propertyPath: m_LocalPosition.x
       value: 105.7
@@ -3243,14 +3230,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 462147440955213857, guid: 4237c7466f469254f978921896cf9c7e, type: 3}
-      propertyPath: audioSource
-      value: 
-      objectReference: {fileID: 838895850}
-    - target: {fileID: 462147440955213857, guid: 4237c7466f469254f978921896cf9c7e, type: 3}
-      propertyPath: documentPickupSFX
-      value: 
-      objectReference: {fileID: 8300000, guid: 835fadd7caf4e324faa1da75ad13ea97, type: 3}
     - target: {fileID: 1007246993073906416, guid: 4237c7466f469254f978921896cf9c7e, type: 3}
       propertyPath: m_Name
       value: Player
@@ -3303,10 +3282,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7400310785893581783, guid: 4237c7466f469254f978921896cf9c7e, type: 3}
-      propertyPath: audioSource
-      value: 
-      objectReference: {fileID: 838895850}
+    - target: {fileID: 8502948873988215261, guid: 4237c7466f469254f978921896cf9c7e, type: 3}
+      propertyPath: m_Volume
+      value: 0.701
+      objectReference: {fileID: 0}
     - target: {fileID: 8525378630689334571, guid: 4237c7466f469254f978921896cf9c7e, type: 3}
       propertyPath: m_Layer
       value: 6
