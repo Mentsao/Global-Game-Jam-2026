@@ -332,7 +332,7 @@ namespace Player
             }
 
             //// Wait for animation duration (adjust as needed or check clip length)
-            yield return new WaitForSeconds(0f);
+            yield return new WaitForSeconds(1f);
 
             _isMaskEquipped = equip;
             _isAnimatingMask = false;
