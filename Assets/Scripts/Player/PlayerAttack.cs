@@ -49,6 +49,10 @@ namespace Player
             if (playerPickup == null || playerPickup.HeldItem == null) return;
 
             string heldName = playerPickup.HeldItem.name.ToLower();
+            
+            // Prevent attack if holding a mask
+            if (heldName.Contains("mask")) return;
+
             // Allow attack if holding typical weapon items or balisong
             if (heldName.Contains("balisong") || heldName.Contains("knife") || heldName.Contains("weapon") || heldName.Contains("item"))
             {

@@ -11,6 +11,9 @@ public class NPCHealth : MonoBehaviour
     [Tooltip("If true, requires ZombieAction or specific scripts to handle animation/logic before destroy.")]
     [SerializeField] private bool handleDeathLogic = true;
 
+    [Header("Loot Settings")]
+    [SerializeField] private GameObject maskDropPrefab;
+
     private bool _isDead = false;
 
     private void Start()
@@ -47,6 +50,12 @@ public class NPCHealth : MonoBehaviour
     {
         if (_isDead) return;
         _isDead = true;
+
+        // Spawn Loot (Mask)
+        if (maskDropPrefab != null)
+        {
+            Instantiate(maskDropPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
+        }
 
         if (handleDeathLogic)
         {

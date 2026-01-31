@@ -13,14 +13,16 @@ namespace Player
         [SerializeField] private AudioSource audioSource;
         // SFX now handled by AudioManager
         [SerializeField] private LayerMask pickupLayer = ~0; // Default to Everything
-        [SerializeField] private System.Collections.Generic.List<string> itemTags = new System.Collections.Generic.List<string> { "Item", "Document" };
+        [SerializeField] private System.Collections.Generic.List<string> itemTags = new System.Collections.Generic.List<string> { "Item", "Document", "Mask" };
 
         private InputSystem_Actions _inputActions;
         private Transform _heldItem; // Currently active item
         
         // Inventory Slots
-        private Transform _weaponSlot;
-        private Transform _documentSlot;
+        private Transform _weaponSlot;   // Key 1
+        private Transform _documentSlot; // Key 2
+        private Transform _maskSlot1;    // Key 3
+        private Transform _maskSlot2;    // Key 4
         
         private Rigidbody _heldRigidbody;
         private Collider _heldCollider;
@@ -49,25 +51,21 @@ namespace Player
             // if (_heldItem != null) DropItem(); 
         }
 
-        private void Update()
-        {
-            UpdateHeldItemRotation();
-            HandleInput();
-        }
+
 
         private void HandleInput()
         {
-            // Switch to Weapon (Slot 1)
-            if (Keyboard.current != null && Keyboard.current.digit1Key.wasPressedThisFrame || Input.GetKeyDown(KeyCode.Alpha1))
-            {
-                SwitchToSlot(1);
-            }
+            // Slot 1: Weapon
+            if (Keyboard.current != null && Keyboard.current.digit1Key.wasPressedThisFrame || Input.GetKeyDown(KeyCode.Alpha1)) SwitchToSlot(1);
             
-            // Switch to Document (Slot 2)
-            if (Keyboard.current != null && Keyboard.current.digit2Key.wasPressedThisFrame || Input.GetKeyDown(KeyCode.Alpha2))
-            {
-                SwitchToSlot(2);
-            }
+            // Slot 2: Document
+            if (Keyboard.current != null && Keyboard.current.digit2Key.wasPressedThisFrame || Input.GetKeyDown(KeyCode.Alpha2)) SwitchToSlot(2);
+
+            // Slot 3: Mask 1
+            if (Keyboard.current != null && Keyboard.current.digit3Key.wasPressedThisFrame || Input.GetKeyDown(KeyCode.Alpha3)) SwitchToSlot(3);
+
+            // Slot 4: Mask 2
+            if (Keyboard.current != null && Keyboard.current.digit4Key.wasPressedThisFrame || Input.GetKeyDown(KeyCode.Alpha4)) SwitchToSlot(4);
         }
 
         private void OnValidate()
@@ -76,10 +74,12 @@ namespace Player
         }
 
         public bool preventRotationUpdate = false;
+        private bool _isMaskEquipped = false;
+        private bool _isAnimatingMask = false;
 
         private void UpdateHeldItemRotation()
         {
-            if (preventRotationUpdate) return;
+            if (preventRotationUpdate || _isAnimatingMask || _isMaskEquipped) return;
 
             if (_heldItem != null)
             {
@@ -102,7 +102,7 @@ namespace Player
 
         private void OnInteract(InputAction.CallbackContext context)
         {
-            Debug.Log("Interact Pressed");
+            // Debug.Log("Interact Pressed");
 
             // 1. Try to find an item to Interact/Collect first
             if (TryPickupItem()) 
@@ -111,7 +111,7 @@ namespace Player
             }
 
             // 2. If nothing collected/picked up, try to Drop
-            if (_heldItem != null)
+            if (_heldItem != null && !_isMaskEquipped && !_isAnimatingMask)
             {
                 // Prevent dropping if it's the Balisong
                 // string heldName = _heldItem.name.ToLower();
@@ -123,10 +123,7 @@ namespace Player
                 
                 DropItem();
             }
-
-
-
-            }
+         }
 
 
         private bool TryPickupItem()
@@ -156,8 +153,8 @@ namespace Player
             {
                 string lowerName = bestTarget.name.ToLower();
                 
-                // 1. Consumables (Mask, Paper but NOT Document)
-                if ((lowerName.Contains("mask") || lowerName.Contains("paper")) && !lowerName.Contains("document"))
+                // 1. Consumables (Paper but NOT Document)
+                if (lowerName.Contains("paper") && !lowerName.Contains("document"))
                 {
                     if (UI.InventoryUI.Instance != null)
                     {
@@ -170,17 +167,33 @@ namespace Player
 
                 // 2. Determine Slot Type
                 bool isDocument = lowerName.Contains("document");
-                bool isWeapon = lowerName.Contains("balisong") || lowerName.Contains("knife") || lowerName.Contains("weapon");
+                bool isMask = lowerName.Contains("mask");
+                // bool isWeapon = ... (implicit else)
 
                 if (isDocument)
                 {
-                    // Pickup Document
                     PickupToSlot(bestTarget, 2);
+                    return true;
+                }
+                else if (isMask)
+                {
+                    // Find first empty mask slot or replace current if full
+                    int targetSlot = 3; // Default to first mask slot
+                    if (_maskSlot1 == null) targetSlot = 3;
+                    else if (_maskSlot2 == null) targetSlot = 4;
+                    else
+                    {
+                         // All full: Replace currently held mask key, or default to 3
+                         // For simplicity, just overwrite Mask 1 if full for now
+                         targetSlot = 3;
+                    }
+                    
+                    PickupToSlot(bestTarget, targetSlot);
                     return true;
                 }
                 else
                 {
-                    // Default to Weapon Slot (1) if it's an Item/Weapon/Everything else
+                    // Default to Weapon Slot (1)
                     PickupToSlot(bestTarget, 1);
                     return true;
                 }
@@ -191,19 +204,19 @@ namespace Player
 
         private void PickupToSlot(Transform item, int slotIndex)
         {
-            // 1. If slot is occupied, drop current item in that slot
-            Transform previousItem = (slotIndex == 1) ? _weaponSlot : _documentSlot;
+            // 1. Determine which slot variable we are targeting
+            Transform previousItem = GetItemInSlot(slotIndex);
             
             if (previousItem != null)
             {
-                // If we are currently holding the item we are about to replace, drop it properly
+                // If we are currently holding the item we are about to replace, drop it
                 if (_heldItem == previousItem)
                 {
-                   DropItem(); // Drop physically
+                   DropItem(); 
                 }
                 else
                 {
-                    // If it's in the pocket (inactive), just unparent and enable it at current position
+                    // Eject from pocket
                     previousItem.SetParent(null);
                     previousItem.gameObject.SetActive(true);
                     
@@ -216,49 +229,155 @@ namespace Player
             }
 
             // 2. Assign logic
-            if (slotIndex == 1) _weaponSlot = item;
-            else _documentSlot = item;
+            SetItemInSlot(slotIndex, item);
 
-            // 3. Equip logic (Switch to this slot immediately)
+            // 3. Equip logic 
             SwitchToSlot(slotIndex);
 
             // Play Pickup Audio
-            if (AudioManager.Instance != null)
+            if (AudioManager.Instance != null && item != null)
             {
                 string lowerName = item.name.ToLower();
-                if (lowerName.Contains("balisong") || lowerName.Contains("knife"))
-                {
-                    AudioManager.Instance.PlayBalisongPickup();
-                }
-                else if (lowerName.Contains("document"))
-                {
-                    AudioManager.Instance.PlayDocumentPickup();
-                }
+                if (lowerName.Contains("balisong") || lowerName.Contains("knife")) AudioManager.Instance.PlayBalisongPickup();
+                else if (lowerName.Contains("document")) AudioManager.Instance.PlayDocumentPickup();
+                // else Mask pickup sound?
             }
         }
 
         private void SwitchToSlot(int slotIndex)
         {
-             // Disable current held item visuals (put in pocket)
+             // Disable current held item visuals
             if (_heldItem != null)
             {
                 _heldItem.gameObject.SetActive(false);
             }
 
+            // Reset Mask State
+            _isMaskEquipped = false;
+            _isAnimatingMask = false;
+
             // Determine new item
-            Transform newItem = (slotIndex == 1) ? _weaponSlot : _documentSlot;
+            Transform newItem = GetItemInSlot(slotIndex);
 
             if (newItem != null)
             {
                 _heldItem = newItem;
                 _heldItem.gameObject.SetActive(true);
-                InitializeHeldItem(_heldItem); // Setup physics/parenting
+                InitializeHeldItem(_heldItem); 
                 Debug.Log($"Switched to Slot {slotIndex}: {_heldItem.name}");
             }
             else
             {
                 _heldItem = null;
                 Debug.Log($"Switched to Slot {slotIndex}: [Empty]");
+            }
+        }
+
+        private void Update()
+        {
+            UpdateHeldItemRotation();
+            HandleInput();
+            HandleMaskInput();
+        }
+
+        private void HandleMaskInput()
+        {
+            // Only check if holding a mask and not currently animating
+            if (_heldItem == null || _isAnimatingMask) return;
+            if (!_heldItem.name.ToLower().Contains("mask")) return;
+
+            // Check Left Mouse Button
+            bool input = false;
+             if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame) input = true;
+             else if (Input.GetMouseButtonDown(0)) input = true; // Fallback
+
+            if (input)
+            {
+                StartCoroutine(EquipMaskRoutine(!_isMaskEquipped));
+            }
+        }
+
+        private System.Collections.IEnumerator EquipMaskRoutine(bool equip)
+        {
+            _isAnimatingMask = true;
+            
+            // If Unequipping, we must show the mask first
+            if (!equip)
+            {
+                _heldItem.gameObject.SetActive(true);
+            }
+
+            float duration = 0.25f; // Slight tweak for snappiness
+            float elapsed = 0f;
+
+            // Define "Face" position (relative to camera/holder)
+            // Closer to camera for the "slap" effect
+            Vector3 facePos = new Vector3(0, 0, 0.2f); 
+            Quaternion faceRot = Quaternion.Euler(0, 180, 0); 
+
+            // Define "Hand" position
+            Interaction.PickupableItem settings = _heldItem.GetComponent<Interaction.PickupableItem>();
+            Vector3 handPos = (settings != null) ? settings.holdPositionOffset : Vector3.zero;
+            Quaternion handRot = (settings != null) ? Quaternion.Euler(settings.holdRotation) : Quaternion.Euler(holdRotation);
+
+            Vector3 startPos = equip ? handPos : facePos;
+            Quaternion startRot = equip ? handRot : faceRot;
+            
+            Vector3 targetPos = equip ? facePos : handPos;
+            Quaternion targetRot = equip ? faceRot : handRot; // Corrected logic
+
+            // Force start position if unequipping (since it was hidden)
+            if (!equip)
+            {
+                _heldItem.localPosition = startPos;
+                _heldItem.localRotation = startRot;
+            }
+
+            while (elapsed < duration)
+            {
+                float t = elapsed / duration;
+                // Linear or EaseOutBack
+                _heldItem.localPosition = Vector3.Lerp(startPos, targetPos, t);
+                _heldItem.localRotation = Quaternion.Lerp(startRot, targetRot, t);
+                
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            _heldItem.localPosition = targetPos;
+            _heldItem.localRotation = targetRot;
+
+            _isMaskEquipped = equip;
+            _isAnimatingMask = false;
+            
+            // If Equipped, hide the mask now
+            if (equip)
+            {
+                _heldItem.gameObject.SetActive(false);
+            }
+        }
+
+
+        private Transform GetItemInSlot(int slotIndex)
+        {
+            switch(slotIndex)
+            {
+                case 1: return _weaponSlot;
+                case 2: return _documentSlot;
+                case 3: return _maskSlot1;
+                case 4: return _maskSlot2;
+                default: return null;
+            }
+        }
+
+        private void SetItemInSlot(int slotIndex, Transform item)
+        {
+            switch(slotIndex)
+            {
+                case 1: _weaponSlot = item; break;
+                case 2: _documentSlot = item; break;
+                case 3: _maskSlot1 = item; break;
+                case 4: _maskSlot2 = item; break;
             }
         }
 
@@ -305,7 +424,6 @@ namespace Player
 
         private void PickupItem(Transform item) 
         {
-            // Legacy wrapper - redirects to slot 1 for now if called internally
             PickupToSlot(item, 1);
         }
 
@@ -322,6 +440,8 @@ namespace Player
             // Remove from Slot Reference
             if (_heldItem == _weaponSlot) _weaponSlot = null;
             if (_heldItem == _documentSlot) _documentSlot = null;
+            if (_heldItem == _maskSlot1) _maskSlot1 = null;
+            if (_heldItem == _maskSlot2) _maskSlot2 = null;
 
             Destroy(_heldItem.gameObject);
 
@@ -357,6 +477,8 @@ namespace Player
             // Remove from Slot Reference
             if (_heldItem == _weaponSlot) _weaponSlot = null;
             if (_heldItem == _documentSlot) _documentSlot = null;
+            if (_heldItem == _maskSlot1) _maskSlot1 = null;
+            if (_heldItem == _maskSlot2) _maskSlot2 = null;
 
             // Unparent
             _heldItem.SetParent(null);
