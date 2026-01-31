@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 1
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 1680820591}
+  m_SkyboxMaterial: {fileID: 887276622}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -601,16 +601,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f03ae465d1cf4a64cb39a286251cea89, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AudioManager
-  mainTheme: {fileID: 0}
+  masterVolume: 1
+  musicVolume: 1
+  sfxVolume: 1
+  ambienceVolume: 1
+  mainTheme: {fileID: 8300000, guid: 85cbdc3e6c8c08f4cb4d1c670720630e, type: 3}
   bgmSource: {fileID: 0}
-  stepWalk: {fileID: 0}
-  stepRun: {fileID: 0}
-  stepCrouch: {fileID: 0}
-  attackSwing: {fileID: 0}
-  zombieGrowl: {fileID: 0}
-  policePass: {fileID: 0}
-  policeFail: {fileID: 0}
-  tensionLoop: {fileID: 0}
+  stepWalk: {fileID: 8300000, guid: 452b5ac6ff73d7649980c2d757f01f94, type: 3}
+  stepRun: {fileID: 8300000, guid: 452b5ac6ff73d7649980c2d757f01f94, type: 3}
+  stepCrouch: {fileID: 8300000, guid: be48dd0abe8bfa34aa84ebedb92f27d5, type: 3}
+  jumpSFX: {fileID: 8300000, guid: 39cf61530c74d4a4b985906499815bc6, type: 3}
+  attackSwing: {fileID: 8300000, guid: e24d6335b2e7f8e4d817ed567c04dd72, type: 3}
+  balisongPickupSFX: {fileID: 8300000, guid: 5d11774180c3043439b2f0d148a9e36c, type: 3}
+  documentPickupSFX: {fileID: 8300000, guid: 835fadd7caf4e324faa1da75ad13ea97, type: 3}
+  zombieGrowl: {fileID: 8300000, guid: 2e36b69b93d0a5b46b5ba168469108b6, type: 3}
+  policePass: {fileID: 8300000, guid: d7168fbd70502fe46866c89eed6c62ea, type: 3}
+  policeFail: {fileID: 8300000, guid: 631d967f7d855f745822bebba9c9bf59, type: 3}
+  tensionLoop: {fileID: 8300000, guid: e356a5113da4d35419e5193fc4f020f7, type: 3}
   tensionFadeSpeed: 1
 --- !u!1001 &504654968
 PrefabInstance:
@@ -1547,6 +1554,40 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 877603976}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!21 &887276622
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ApocalypseSkybox
+  m_Shader: {fileID: 4800000, guid: 1532f53324586a147a004f04e19bc6b7, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _SmogDensity: 4
+    - _SmogSpeed: 0.5
+    m_Colors:
+    - _BottomColor: {r: 0.05, g: 0.1, b: 0.1, a: 1}
+    - _HorizonColor: {r: 0.1, g: 0.3, b: 0.25, a: 1}
+    - _SmogColor: {r: 0.1, g: 0.4, b: 0.3, a: 0.5}
+    - _TopColor: {r: 0.1, g: 0.15, b: 0.15, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1 &893624428
 GameObject:
   m_ObjectHideFlags: 0
@@ -2316,40 +2357,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1603892792}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!21 &1680820591
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: ApocalypseSkybox
-  m_Shader: {fileID: 4800000, guid: 1532f53324586a147a004f04e19bc6b7, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs: []
-    m_Ints: []
-    m_Floats:
-    - _SmogDensity: 4
-    - _SmogSpeed: 0.5
-    m_Colors:
-    - _BottomColor: {r: 0.05, g: 0.1, b: 0.1, a: 1}
-    - _HorizonColor: {r: 0.1, g: 0.3, b: 0.25, a: 1}
-    - _SmogColor: {r: 0.1, g: 0.4, b: 0.3, a: 0.5}
-    - _TopColor: {r: 0.1, g: 0.15, b: 0.15, a: 1}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!1 &1682085573
 GameObject:
   m_ObjectHideFlags: 0

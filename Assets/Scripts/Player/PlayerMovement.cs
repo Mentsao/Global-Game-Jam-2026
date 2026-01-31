@@ -104,6 +104,11 @@ namespace Player
             if (_characterController.isGrounded)
             {
                 _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                
+                if (AudioManager.Instance != null)
+                {
+                    AudioManager.Instance.PlayJump();
+                }
             }
         }
 

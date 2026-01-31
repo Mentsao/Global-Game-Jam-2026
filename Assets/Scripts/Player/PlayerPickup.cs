@@ -9,6 +9,9 @@ namespace Player
         [SerializeField] private Transform holdPosition;
         [SerializeField] private Vector3 holdRotation = Vector3.zero;
         [SerializeField] private float pickupRange = 3f;
+        [Header("Audio")]
+        [SerializeField] private AudioSource audioSource;
+        // SFX now handled by AudioManager
         [SerializeField] private LayerMask pickupLayer = ~0; // Default to Everything
         [SerializeField] private System.Collections.Generic.List<string> itemTags = new System.Collections.Generic.List<string> { "Item", "Document" };
 
@@ -120,7 +123,11 @@ namespace Player
                 
                 DropItem();
             }
-        }
+
+
+
+            }
+
 
         private bool TryPickupItem()
         {
@@ -214,6 +221,20 @@ namespace Player
 
             // 3. Equip logic (Switch to this slot immediately)
             SwitchToSlot(slotIndex);
+
+            // Play Pickup Audio
+            if (AudioManager.Instance != null)
+            {
+                string lowerName = item.name.ToLower();
+                if (lowerName.Contains("balisong") || lowerName.Contains("knife"))
+                {
+                    AudioManager.Instance.PlayBalisongPickup();
+                }
+                else if (lowerName.Contains("document"))
+                {
+                    AudioManager.Instance.PlayDocumentPickup();
+                }
+            }
         }
 
         private void SwitchToSlot(int slotIndex)

@@ -6,6 +6,12 @@ public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance;
 
+    [Header("Volume Settings")]
+    [Range(0f, 1f)] public float masterVolume = 1.0f;
+    [Range(0f, 1f)] public float musicVolume = 1.0f;
+    [Range(0f, 1f)] public float sfxVolume = 1.0f;
+    [Range(0f, 1f)] public float ambienceVolume = 1.0f;
+
     [Header("BGM")]
     [SerializeField] private AudioClip mainTheme;
     [SerializeField] private AudioSource bgmSource;
@@ -14,7 +20,11 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioClip stepWalk;
     [SerializeField] private AudioClip stepRun;
     [SerializeField] private AudioClip stepCrouch;
+
+    [SerializeField] private AudioClip jumpSFX;
     [SerializeField] private AudioClip attackSwing;
+    [SerializeField] private AudioClip balisongPickupSFX;
+    [SerializeField] private AudioClip documentPickupSFX;
     
     [Header("Zombie SFX")]
     [SerializeField] private AudioClip zombieGrowl;
@@ -25,9 +35,11 @@ public class AudioManager : MonoBehaviour
 
     [Header("Atmosphere")]
     [SerializeField] private AudioClip tensionLoop;
+
     [SerializeField] private float tensionFadeSpeed = 1.0f;
     private AudioSource tensionSource;
     private AudioSource sfxSource;
+    private float _tensionIntensity = 0f;
 
     private void Awake()
     {
@@ -75,6 +87,20 @@ public class AudioManager : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        // Real-time Volume Updates
+        if (bgmSource != null)
+        {
+            bgmSource.volume = musicVolume * masterVolume * 0.5f; // Initial 0.5 padding kept from original
+        }
+
+        if (tensionSource != null)
+        {
+            tensionSource.volume = _tensionIntensity * ambienceVolume * masterVolume;
+        }
+    }
+
     // --- PLAYER ---
     public void PlayFootstep(bool isRunning, bool isCrouching)
     {
@@ -92,25 +118,42 @@ public class AudioManager : MonoBehaviour
             vol = 0.7f;
         }
 
-        if (clip != null) sfxSource.PlayOneShot(clip, vol);
+
+
+        if (clip != null) sfxSource.PlayOneShot(clip, vol * sfxVolume * masterVolume);
+    }
+
+    public void PlayJump()
+    {
+        if (jumpSFX != null) sfxSource.PlayOneShot(jumpSFX, 0.8f * sfxVolume * masterVolume);
+    }
+
+    public void PlayBalisongPickup()
+    {
+        if (balisongPickupSFX != null) sfxSource.PlayOneShot(balisongPickupSFX, 1.0f * sfxVolume * masterVolume);
+    }
+
+    public void PlayDocumentPickup()
+    {
+        if (documentPickupSFX != null) sfxSource.PlayOneShot(documentPickupSFX, 1.0f * sfxVolume * masterVolume);
     }
 
     public void PlayPlayerAttack()
     {
-        if (attackSwing != null) sfxSource.PlayOneShot(attackSwing, 0.8f);
+        if (attackSwing != null) sfxSource.PlayOneShot(attackSwing, 0.8f * sfxVolume * masterVolume);
     }
 
     // --- ZOMBIE ---
     public void PlayZombieGrowl()
     {
-        if (zombieGrowl != null) sfxSource.PlayOneShot(zombieGrowl, 1.0f);
+        if (zombieGrowl != null) sfxSource.PlayOneShot(zombieGrowl, 1.0f * sfxVolume * masterVolume);
     }
 
     // --- POLICE ---
     public void PlayPoliceDecision(bool approved)
     {
         AudioClip clip = approved ? policePass : policeFail;
-        if (clip != null) sfxSource.PlayOneShot(clip, 1.0f);
+        if (clip != null) sfxSource.PlayOneShot(clip, 1.0f * sfxVolume * masterVolume);
     }
 
     // --- ATMOSPHERE ---
@@ -120,18 +163,18 @@ public class AudioManager : MonoBehaviour
     {
         if (tensionLoop == null) return;
         
-        float targetVol = active ? 0.8f : 0.0f;
+        float targetIntensity = active ? 0.8f : 0.0f;
         if (tensionCoroutine != null) StopCoroutine(tensionCoroutine);
-        tensionCoroutine = StartCoroutine(FadeTension(targetVol));
+        tensionCoroutine = StartCoroutine(FadeTension(targetIntensity));
     }
 
-    private IEnumerator FadeTension(float targetVol)
+    private IEnumerator FadeTension(float targetIntensity)
     {
-        while (Mathf.Abs(tensionSource.volume - targetVol) > 0.01f)
+        while (Mathf.Abs(_tensionIntensity - targetIntensity) > 0.01f)
         {
-            tensionSource.volume = Mathf.MoveTowards(tensionSource.volume, targetVol, Time.deltaTime * tensionFadeSpeed);
+            _tensionIntensity = Mathf.MoveTowards(_tensionIntensity, targetIntensity, Time.deltaTime * tensionFadeSpeed);
             yield return null;
         }
-        tensionSource.volume = targetVol;
+        _tensionIntensity = targetIntensity;
     }
 }
