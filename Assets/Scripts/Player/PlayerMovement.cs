@@ -15,7 +15,16 @@ namespace Player
         [SerializeField] private Transform cameraTransform;
         [SerializeField] private float mouseSensitivity = 100f;
         [SerializeField] private float topClamp = 90f;
+
         [SerializeField] private float bottomClamp = -90f;
+
+        [Header("Audio Settings")]
+        [SerializeField] private AudioSource audioSource;
+        [SerializeField] private AudioClip footstepSFX;
+        [SerializeField] private AudioClip jumpSFX;
+        [SerializeField] private float stepInterval = 0.5f;
+
+        private float _stepTimer = 0f;
 
         private CharacterController _characterController;
         private InputSystem_Actions _inputActions;
@@ -27,7 +36,11 @@ namespace Player
         private void Awake()
         {
             _characterController = GetComponent<CharacterController>();
+
             _inputActions = new InputSystem_Actions();
+
+            if (audioSource == null) audioSource = GetComponent<AudioSource>();
+            if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
 
             // Lock cursor
             Cursor.lockState = CursorLockMode.Locked;
@@ -94,6 +107,11 @@ namespace Player
             if (_characterController.isGrounded)
             {
                 _velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                
+                if (jumpSFX != null && audioSource != null)
+                {
+                    audioSource.PlayOneShot(jumpSFX);
+                }
             }
         }
 
@@ -113,6 +131,33 @@ namespace Player
             // Gravity
             _velocity.y += gravity * Time.deltaTime;
             _characterController.Move(_velocity * Time.deltaTime);
+
+
+            // Footsteps
+            if (isGrounded && move.magnitude > 0.1f)
+            {
+                _stepTimer -= Time.deltaTime;
+                if (_stepTimer <= 0f)
+                {
+                    PlayFootstep();
+                    _stepTimer = stepInterval;
+                }
+            }
+            else
+            {
+                // Reset timer so next step is immediate
+                _stepTimer = 0f;
+            }
+        }
+
+        private void PlayFootstep()
+        {
+            if (footstepSFX != null && audioSource != null)
+            {
+                // Vary pitch slightly for realism? User didn't ask but is standard. keeping simple first.
+                // audioSource.pitch = Random.Range(0.9f, 1.1f); 
+                audioSource.PlayOneShot(footstepSFX);
+            }
         }
 
         private void HandleRotation()
