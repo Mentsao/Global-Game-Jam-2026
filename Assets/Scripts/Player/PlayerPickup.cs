@@ -28,10 +28,15 @@ namespace Player
 
         public Transform HeldItem => _heldItem;
 
+        [Header("Tutorial Checks")]
+        public bool isWeapon = false;
+        PlayerDeath playerDeath;
+
         private void Awake()
         {
             _inputActions = new InputSystem_Actions();
             _cameraTransform = Camera.main.transform;
+            playerDeath = GetComponent<PlayerDeath>();
         }
 
         private void OnEnable()
@@ -170,12 +175,13 @@ namespace Player
 
                 // 2. Determine Slot Type
                 bool isDocument = lowerName.Contains("document");
-                bool isWeapon = lowerName.Contains("balisong") || lowerName.Contains("knife") || lowerName.Contains("weapon");
+                isWeapon = lowerName.Contains("balisong") || lowerName.Contains("knife") || lowerName.Contains("weapon");
 
                 if (isDocument)
                 {
                     // Pickup Document
                     PickupToSlot(bestTarget, 2);
+                    playerDeath.DocumentFound();
                     return true;
                 }
                 else
