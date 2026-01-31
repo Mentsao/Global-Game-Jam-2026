@@ -9,6 +9,7 @@ namespace Player
         [SerializeField] private Transform holdPosition;
         [SerializeField] private Vector3 holdRotation = Vector3.zero;
         [SerializeField] private float pickupRange = 3f;
+        [SerializeField] private Animator anim;
         [Header("Audio")]
         [SerializeField] private AudioSource audioSource;
         // SFX now handled by AudioManager
@@ -34,11 +35,15 @@ namespace Player
         public bool isWeapon = false;
         PlayerDeath playerDeath;
 
+        [Header("External Systems")]
+        [SerializeField] private MaskEquipController maskController;
+
         private void Awake()
         {
             _inputActions = new InputSystem_Actions();
             _cameraTransform = Camera.main.transform;
             playerDeath = GetComponent<PlayerDeath>();
+            if (maskController == null) maskController = GetComponentInChildren<MaskEquipController>();
         }
 
         private void OnEnable()
@@ -75,35 +80,33 @@ namespace Player
 
         private void OnValidate()
         {
-            UpdateHeldItemRotation();
+            //UpdateHeldItemRotation();
         }
 
         public bool preventRotationUpdate = false;
-        private bool _isMaskEquipped = false;
-        private bool _isAnimatingMask = false;
 
-        private void UpdateHeldItemRotation()
-        {
-            if (preventRotationUpdate || _isAnimatingMask || _isMaskEquipped) return;
+        //private void UpdateHeldItemRotation()
+        //{
+        //    if (preventRotationUpdate || _isAnimatingMask || _isMaskEquipped) return;
 
-            if (_heldItem != null)
-            {
-                // Check if the item has specific settings
-                Interaction.PickupableItem itemSettings = _heldItem.GetComponent<Interaction.PickupableItem>();
+        //    if (_heldItem != null)
+        //    {
+        //        // Check if the item has specific settings
+        //        Interaction.PickupableItem itemSettings = _heldItem.GetComponent<Interaction.PickupableItem>();
                 
-                if (itemSettings != null)
-                {
-                    _heldItem.localRotation = Quaternion.Euler(itemSettings.holdRotation);
-                    _heldItem.localPosition = itemSettings.holdPositionOffset;
-                }
-                else
-                {
-                    // Fallback to global setting
-                    _heldItem.localRotation = Quaternion.Euler(holdRotation);
-                    _heldItem.localPosition = Vector3.zero;
-                }
-            }
-        }
+        //        if (itemSettings != null)
+        //        {
+        //            _heldItem.localRotation = Quaternion.Euler(itemSettings.holdRotation);
+        //            _heldItem.localPosition = itemSettings.holdPositionOffset;
+        //        }
+        //        else
+        //        {
+        //            // Fallback to global setting
+        //            _heldItem.localRotation = Quaternion.Euler(holdRotation);
+        //            _heldItem.localPosition = Vector3.zero;
+        //        }
+        //    }
+        //}
 
         private void OnInteract(InputAction.CallbackContext context)
         {
@@ -116,7 +119,7 @@ namespace Player
             }
 
             // 2. If nothing collected/picked up, try to Drop
-            if (_heldItem != null && !_isMaskEquipped && !_isAnimatingMask)
+            if (_heldItem != null && (maskController == null || (!maskController.IsMaskEquipped && !maskController.IsAnimating)))
             {
                 // Prevent dropping if it's the Balisong
                 // string heldName = _heldItem.name.ToLower();
@@ -259,8 +262,7 @@ namespace Player
             }
 
             // Reset Mask State
-            _isMaskEquipped = false;
-            _isAnimatingMask = false;
+            if (maskController != null) maskController.ResetState();
 
             // Determine new item
             Transform newItem = GetItemInSlot(slotIndex);
@@ -281,87 +283,11 @@ namespace Player
 
         private void Update()
         {
-            UpdateHeldItemRotation();
+            //UpdateHeldItemRotation();
             HandleInput();
-            HandleMaskInput();
         }
 
-        private void HandleMaskInput()
-        {
-            // Only check if holding a mask and not currently animating
-            if (_heldItem == null || _isAnimatingMask) return;
-            if (!_heldItem.name.ToLower().Contains("mask")) return;
 
-            // Check Left Mouse Button
-            bool input = false;
-             if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame) input = true;
-             else if (Input.GetMouseButtonDown(0)) input = true; // Fallback
-
-            if (input)
-            {
-                StartCoroutine(EquipMaskRoutine(!_isMaskEquipped));
-            }
-        }
-
-        private System.Collections.IEnumerator EquipMaskRoutine(bool equip)
-        {
-            _isAnimatingMask = true;
-            
-            // If Unequipping, we must show the mask first
-            if (!equip)
-            {
-                _heldItem.gameObject.SetActive(true);
-            }
-
-            float duration = 0.25f; // Slight tweak for snappiness
-            float elapsed = 0f;
-
-            // Define "Face" position (relative to camera/holder)
-            // Closer to camera for the "slap" effect
-            Vector3 facePos = new Vector3(0, 0, 0.2f); 
-            Quaternion faceRot = Quaternion.Euler(0, 180, 0); 
-
-            // Define "Hand" position
-            Interaction.PickupableItem settings = _heldItem.GetComponent<Interaction.PickupableItem>();
-            Vector3 handPos = (settings != null) ? settings.holdPositionOffset : Vector3.zero;
-            Quaternion handRot = (settings != null) ? Quaternion.Euler(settings.holdRotation) : Quaternion.Euler(holdRotation);
-
-            Vector3 startPos = equip ? handPos : facePos;
-            Quaternion startRot = equip ? handRot : faceRot;
-            
-            Vector3 targetPos = equip ? facePos : handPos;
-            Quaternion targetRot = equip ? faceRot : handRot; // Corrected logic
-
-            // Force start position if unequipping (since it was hidden)
-            if (!equip)
-            {
-                _heldItem.localPosition = startPos;
-                _heldItem.localRotation = startRot;
-            }
-
-            while (elapsed < duration)
-            {
-                float t = elapsed / duration;
-                // Linear or EaseOutBack
-                _heldItem.localPosition = Vector3.Lerp(startPos, targetPos, t);
-                _heldItem.localRotation = Quaternion.Lerp(startRot, targetRot, t);
-                
-                elapsed += Time.deltaTime;
-                yield return null;
-            }
-
-            _heldItem.localPosition = targetPos;
-            _heldItem.localRotation = targetRot;
-
-            _isMaskEquipped = equip;
-            _isAnimatingMask = false;
-            
-            // If Equipped, hide the mask now
-            if (equip)
-            {
-                _heldItem.gameObject.SetActive(false);
-            }
-        }
 
 
         private Transform GetItemInSlot(int slotIndex)
@@ -414,7 +340,7 @@ namespace Player
             // Parent to Hold Position
             item.SetParent(holdPosition);
             item.localPosition = Vector3.zero;
-            UpdateHeldItemRotation();
+            //UpdateHeldItemRotation();
         }
 
         private void OnDrawGizmosSelected()
