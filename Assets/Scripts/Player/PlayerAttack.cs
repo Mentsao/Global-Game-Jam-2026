@@ -80,6 +80,13 @@ namespace Player
             {
                 AudioManager.Instance.PlayPlayerAttack();
             }
+
+            // Stealth Gain on Attack
+            if (UI.StealthManager.Instance != null)
+            {
+                float attackGain = Random.Range(30f, 35f);
+                UI.StealthManager.Instance.AddStealth(attackGain);
+            }
             
             // 1. Take control
             playerPickup.preventRotationUpdate = true;

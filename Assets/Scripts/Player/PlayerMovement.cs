@@ -109,6 +109,13 @@ namespace Player
                 {
                     AudioManager.Instance.PlayJump();
                 }
+
+                // Stealth Gain on Jump
+                if (UI.StealthManager.Instance != null)
+                {
+                    float jumpGain = Random.Range(10f, 15f);
+                    UI.StealthManager.Instance.AddStealth(jumpGain);
+                }
             }
         }
 
@@ -169,6 +176,16 @@ namespace Player
             Vector3 move = transform.right * _moveInput.x + transform.forward * _moveInput.y;
             bool isMoving = move.sqrMagnitude > 0;
             _characterController.Move(move * currentSpeed * Time.deltaTime);
+
+            // --- STEALTH LOGIC ---
+            if (isMoving && isGrounded && !isCrouching)
+            {
+                if (UI.StealthManager.Instance != null)
+                {
+                    float stealthRate = (currentSpeed == sprintSpeed) ? 5f : 2f;
+                    UI.StealthManager.Instance.AddStealth(stealthRate * Time.deltaTime);
+                }
+            }
 
             // Footsteps Logic
             if (isMoving && isGrounded)
