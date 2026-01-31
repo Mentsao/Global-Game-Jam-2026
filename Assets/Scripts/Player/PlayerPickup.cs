@@ -83,6 +83,9 @@ namespace Player
         public bool preventRotationUpdate = false;
         private bool _isMaskEquipped = false;
         private bool _isAnimatingMask = false;
+        
+        // Unified Mask System
+        public Items.Masks.MaskType CurrentMaskType { get; private set; } = Items.Masks.MaskType.None;
 
         private void UpdateHeldItemRotation()
         {
@@ -263,6 +266,7 @@ namespace Player
             // Reset Mask State
             _isMaskEquipped = false;
             _isAnimatingMask = false;
+            CurrentMaskType = Items.Masks.MaskType.None; // Reset Mask Type on switch
 
             // Determine new item
             Transform newItem = GetItemInSlot(slotIndex);
@@ -317,13 +321,15 @@ namespace Player
             {
                 if (equip)
                 {
-                    maskSlotAnim.SetTrigger("MaskOn");
+                    // "MaskOn" must be the exact name of the Animation STATE in the Animator
+                    maskSlotAnim.Play("MaskOn", 0, 0f); 
                 }
                 else
                 {
                     // If Unequipping, show the mask first so it can animate off
                      if (_heldItem != null) _heldItem.gameObject.SetActive(true);
-                    maskSlotAnim.SetTrigger("MaskOff");
+                     // "MaskOff" must be the exact name of the Animation STATE
+                    maskSlotAnim.Play("MaskOff", 0, 0f);
                 }
             }
             else
@@ -332,7 +338,7 @@ namespace Player
             }
 
             //// Wait for animation duration (adjust as needed or check clip length)
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(0.25f);
 
             _isMaskEquipped = equip;
             _isAnimatingMask = false;
@@ -341,6 +347,20 @@ namespace Player
             if (equip && _heldItem != null)
             {
                 _heldItem.gameObject.SetActive(false);
+                
+                // Update Current Mask Type
+                Items.Masks.MaskItem maskItem = _heldItem.GetComponent<Items.Masks.MaskItem>();
+                if (maskItem != null)
+                {
+                    CurrentMaskType = maskItem.Type;
+                    Debug.Log($"[Mask] Equipped: {CurrentMaskType}");
+                }
+            }
+            else if (!equip)
+            {
+                // Unequipped
+                CurrentMaskType = Items.Masks.MaskType.None;
+                Debug.Log("[Mask] Unequipped");
             }
         }
 

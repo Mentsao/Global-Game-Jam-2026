@@ -10,6 +10,8 @@ TagManager:
   - Item
   - Document
   - Mask
+  - Zombies
+  - Healthcare
   layers:
   - Default
   - TransparentFX
@@ -19,13 +21,13 @@ TagManager:
   - UI
   - Person
   - Mask
-  - 
-  - 
+  - Police
+  - Healthcare
   - Weapon
   - Item
   - Document
   - Player
-  - 
+  - Zombie
   - 
   - 
   - 

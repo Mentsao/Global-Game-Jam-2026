@@ -51,6 +51,17 @@ public class ZombieNPCDetect : MonoBehaviour
 
         foreach (var hitCollider in hitColliders)
         {
+            // Check for Zombie Mask
+            if (hitCollider.CompareTag("Player"))
+            {
+                Player.PlayerPickup pickup = hitCollider.GetComponent<Player.PlayerPickup>();
+                if (pickup != null && pickup.CurrentMaskType == Items.Masks.MaskType.Zombie)
+                {
+                    // Ignore masked player
+                    continue; 
+                }
+            }
+
             float enemyDist = Vector3.Distance(hitCollider.transform.position, transform.position);
             if (enemyDist < minDist)
             {

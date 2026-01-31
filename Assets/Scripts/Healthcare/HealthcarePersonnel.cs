@@ -85,6 +85,14 @@ public class HealthcarePersonnel : MonoBehaviour
         {
             if (hit.CompareTag("Player"))
             {
+                // Check for Nurse Mask
+                Player.PlayerPickup pickup = hit.GetComponent<Player.PlayerPickup>();
+                if (pickup != null && pickup.CurrentMaskType == Items.Masks.MaskType.Nurse)
+                {
+                    // Ignore disguised player
+                    continue; 
+                }
+
                 playerInTrigger = true;
                 _playerTransform = hit.transform;
                 break;

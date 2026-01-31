@@ -125,6 +125,17 @@ public class PoliceNPC : MonoBehaviour
     {
         if (player == null) return;
 
+        // Check for Police Mask
+        PlayerPickup pickup = player.GetComponent<PlayerPickup>();
+        if (pickup != null && pickup.CurrentMaskType == Items.Masks.MaskType.Police)
+        {
+            // Player is disguised! Stop chasing.
+            Debug.Log("[Police] Player is disguised as Police. Switching to Patrol.");
+            currentState = PoliceState.Patrolling;
+            agent.ResetPath();
+            return;
+        }
+
         agent.isStopped = false;
         agent.stoppingDistance = 0.8f; 
         agent.SetDestination(player.position);

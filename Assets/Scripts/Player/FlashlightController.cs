@@ -97,6 +97,9 @@ public class FlashlightController : MonoBehaviour
 
     private void HandleFlicker()
     {
+        // 5-second safety grace period
+        if (_activeTimer < 5.0f) return;
+
         if (Random.value < _currentFlickerChance)
         {
             // Trigger a Flicker Event
