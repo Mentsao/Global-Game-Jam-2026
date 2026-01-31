@@ -113,14 +113,14 @@ namespace UI
             VolumeProfile profile = ScriptableObject.CreateInstance<VolumeProfile>();
             _volume.profile = profile;
             
-            // Add Overrides
+            // Add Overrides - Set to TARGET (Maximum) values, blending controls visibility
             profile.TryGet(out _chromaticAberration);
             if (_chromaticAberration == null)
             {
                 _chromaticAberration = profile.Add<ChromaticAberration>(true);
             }
             _chromaticAberration.intensity.overrideState = true;
-            _chromaticAberration.intensity.value = 0f;
+            _chromaticAberration.intensity.value = maxChromaticAberration;
 
             profile.TryGet(out _motionBlur);
             if (_motionBlur == null)
@@ -128,7 +128,7 @@ namespace UI
                 _motionBlur = profile.Add<MotionBlur>(true);
             }
             _motionBlur.intensity.overrideState = true;
-            _motionBlur.intensity.value = 0f;
+            _motionBlur.intensity.value = maxMotionBlur;
 
             profile.TryGet(out _lensDistortion);
             if (_lensDistortion == null)
@@ -136,12 +136,12 @@ namespace UI
                 _lensDistortion = profile.Add<LensDistortion>(true);
             }
             _lensDistortion.intensity.overrideState = true;
-            _lensDistortion.intensity.value = 0f;
+            _lensDistortion.intensity.value = maxLensDistortion;
             _lensDistortion.scale.overrideState = true;
-            _lensDistortion.scale.value = 1f;
+            _lensDistortion.scale.value = lensDistortionScale;
 
-            // Important: Set priority or weight to ensure it shows
-            _volume.weight = 1.0f;
+            // Important: Set priority to override global volumes, but start weight at 0
+            _volume.weight = 0.0f; 
             _volume.priority = 100; // High priority to override global volumes
         }
 
@@ -228,29 +228,15 @@ namespace UI
                 // Effect starts early (at 0.2 alpha)
                 float effectRatio = Mathf.Clamp01((_currentAlpha - 0.2f) / 0.8f);
                 
-                if (effectRatio > 0 && _chromaticAberration != null)
-                {
-                     // Debug.Log($"Applying Effects! Ratio: {effectRatio}");
-                }
+                // Use Volume Weight to blend to the intense profile
+                _volume.weight = effectRatio;
 
-                if (_chromaticAberration != null)
-                {
-                    _chromaticAberration.active = true;
-                    _chromaticAberration.intensity.value = effectRatio * maxChromaticAberration;
-                }
-
-                if (_motionBlur != null)
-                {
-                    _motionBlur.active = true;
-                    _motionBlur.intensity.value = effectRatio * maxMotionBlur;
-                }
-                
+                // Dynamic updates that Volume Blending can't handle perfectly (e.g. Lens Scale specific curves)
+                // But for now, simple blending is robust and fixes the override issue.
                 if (_lensDistortion != null)
                 {
-                    _lensDistortion.active = true;
-                    _lensDistortion.intensity.value = effectRatio * maxLensDistortion;
-                    // Interpolate scale to prevent black borders if using pinch
-                    _lensDistortion.scale.value = Mathf.Lerp(1f, lensDistortionScale, effectRatio);
+                     // Optional: Any specific scripted interactions that depend on Time?
+                     // Currently standard blending is enough.
                 }
             }
         }
