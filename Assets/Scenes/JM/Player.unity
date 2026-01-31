@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 1
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 887276622}
+  m_SkyboxMaterial: {fileID: 822013917}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -617,6 +617,10 @@ MonoBehaviour:
   zombieGrowl: {fileID: 8300000, guid: 2e36b69b93d0a5b46b5ba168469108b6, type: 3}
   policePass: {fileID: 8300000, guid: d7168fbd70502fe46866c89eed6c62ea, type: 3}
   policeFail: {fileID: 8300000, guid: 631d967f7d855f745822bebba9c9bf59, type: 3}
+  policeDetect: {fileID: 8300000, guid: 284deed962a28bd4f8543f5c3303ad11, type: 3}
+  policeWaitLoop: {fileID: 8300000, guid: 96ed56c05585ec844b2ff7bc6d348201, type: 3}
+  policeLoopMinDist: 2
+  policeLoopMaxDist: 15
   tensionLoop: {fileID: 8300000, guid: e356a5113da4d35419e5193fc4f020f7, type: 3}
   tensionFadeSpeed: 1
 --- !u!1001 &504654968
@@ -1296,6 +1300,40 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ee2df9aed815664438976919a41cac56, type: 3}
+--- !u!21 &822013917
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ApocalypseSkybox
+  m_Shader: {fileID: 4800000, guid: 1532f53324586a147a004f04e19bc6b7, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _SmogDensity: 4
+    - _SmogSpeed: 0.5
+    m_Colors:
+    - _BottomColor: {r: 0.05, g: 0.1, b: 0.1, a: 1}
+    - _HorizonColor: {r: 0.1, g: 0.3, b: 0.25, a: 1}
+    - _SmogColor: {r: 0.1, g: 0.4, b: 0.3, a: 0.5}
+    - _TopColor: {r: 0.1, g: 0.15, b: 0.15, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1 &831906777
 GameObject:
   m_ObjectHideFlags: 0
@@ -1554,40 +1592,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 877603976}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!21 &887276622
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: ApocalypseSkybox
-  m_Shader: {fileID: 4800000, guid: 1532f53324586a147a004f04e19bc6b7, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs: []
-    m_Ints: []
-    m_Floats:
-    - _SmogDensity: 4
-    - _SmogSpeed: 0.5
-    m_Colors:
-    - _BottomColor: {r: 0.05, g: 0.1, b: 0.1, a: 1}
-    - _HorizonColor: {r: 0.1, g: 0.3, b: 0.25, a: 1}
-    - _SmogColor: {r: 0.1, g: 0.4, b: 0.3, a: 0.5}
-    - _TopColor: {r: 0.1, g: 0.15, b: 0.15, a: 1}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!1 &893624428
 GameObject:
   m_ObjectHideFlags: 0
