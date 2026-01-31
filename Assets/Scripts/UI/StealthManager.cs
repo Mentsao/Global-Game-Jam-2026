@@ -58,6 +58,15 @@ namespace UI
             _currentStealth += amount;
             _currentStealth = Mathf.Clamp(_currentStealth, 0, maxStealth);
             UpdateUI();
+
+            // Check for Scorched Earth Trigger
+            if (_currentStealth >= maxStealth)
+            {
+                if (ScorchedEarthManager.Instance != null)
+                {
+                    ScorchedEarthManager.Instance.TriggerScorchedEarth();
+                }
+            }
         }
 
         private void UpdateUI()

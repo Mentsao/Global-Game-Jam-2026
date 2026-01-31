@@ -10,8 +10,9 @@ TagManager:
   - Item
   - Document
   - Mask
-  - Zombies
   - Healthcare
+  - Zombie
+  - Government
   layers:
   - Default
   - TransparentFX
@@ -28,7 +29,7 @@ TagManager:
   - Document
   - Player
   - Zombie
-  - 
+  - Government
   - 
   - 
   - 

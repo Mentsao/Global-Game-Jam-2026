@@ -229,7 +229,19 @@ public class ZombieActions : MonoBehaviour
         if ((slider.value <= 1 && QTETimeLeft <= 0) || slider.value <= 0)
         {
             // Kill Player
-            Destroy(zombieNPCDetect.target);
+            // Destroy(zombieNPCDetect.target); 
+            // Use PlayerHealth instead to trigger death sequence
+            var health = zombieNPCDetect.target.GetComponent<Player.PlayerHealth>();
+            if (health != null)
+            {
+                health.TakeDamage(1000); // Massive damage to ensure kill
+            }
+            else
+            {
+                // Fallback if no health script
+                Destroy(zombieNPCDetect.target);
+            }
+            
             EndQTE();
             return;
         }

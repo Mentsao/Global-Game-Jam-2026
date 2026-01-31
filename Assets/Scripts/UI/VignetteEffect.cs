@@ -114,7 +114,6 @@ namespace UI
             _volume.profile = profile;
             
             // Add Overrides - Set to TARGET (Maximum) values, blending controls visibility
-            profile.TryGet(out _chromaticAberration);
             if (_chromaticAberration == null)
             {
                 _chromaticAberration = profile.Add<ChromaticAberration>(true);
@@ -145,6 +144,21 @@ namespace UI
             _volume.priority = 100; // High priority to override global volumes
         }
 
+        // --- SINGLETON & FORCED DANGER ---
+        public static VignetteEffect Instance { get; private set; }
+        private bool _forcedDanger = false;
+
+        private void Awake()
+        {
+            if (Instance == null) Instance = this;
+            else Destroy(this);
+        }
+
+        public void SetForcedDanger(bool active)
+        {
+            _forcedDanger = active;
+        }
+
         private void Update()
         {
             if (_playerTransform == null)
@@ -158,15 +172,18 @@ namespace UI
                  if (_playerTransform == null) return;
             }
 
-            bool isAnyEnemyInRange = false;
+            bool isAnyEnemyInRange = _forcedDanger; // Start with forced value
 
-            foreach (var enemy in EnemyPresence.AllEnemies)
+            if (!isAnyEnemyInRange) // Only check normal enemies if not forced
             {
-                if (enemy == null) continue;
-                if (Vector3.Distance(_playerTransform.position, enemy.transform.position) <= enemy.detectionRange)
+                foreach (var enemy in EnemyPresence.AllEnemies)
                 {
-                    isAnyEnemyInRange = true;
-                    break; 
+                    if (enemy == null) continue;
+                    if (Vector3.Distance(_playerTransform.position, enemy.transform.position) <= enemy.detectionRange)
+                    {
+                        isAnyEnemyInRange = true;
+                        break; 
+                    }
                 }
             }
 
