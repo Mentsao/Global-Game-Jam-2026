@@ -13,7 +13,12 @@ namespace Player
         [SerializeField] private System.Collections.Generic.List<string> itemTags = new System.Collections.Generic.List<string> { "Item", "Document" };
 
         private InputSystem_Actions _inputActions;
-        private Transform _heldItem;
+        private Transform _heldItem; // Currently active item
+        
+        // Inventory Slots
+        private Transform _weaponSlot;
+        private Transform _documentSlot;
+        
         private Rigidbody _heldRigidbody;
         private Collider _heldCollider;
         private Transform _cameraTransform;
@@ -38,12 +43,28 @@ namespace Player
             _inputActions.Player.Disable();
             
             // Safety: Drop item if script is disabled
-            if (_heldItem != null) DropItem();
+            // if (_heldItem != null) DropItem(); 
         }
 
         private void Update()
         {
             UpdateHeldItemRotation();
+            HandleInput();
+        }
+
+        private void HandleInput()
+        {
+            // Switch to Weapon (Slot 1)
+            if (Keyboard.current != null && Keyboard.current.digit1Key.wasPressedThisFrame || Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                SwitchToSlot(1);
+            }
+            
+            // Switch to Document (Slot 2)
+            if (Keyboard.current != null && Keyboard.current.digit2Key.wasPressedThisFrame || Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                SwitchToSlot(2);
+            }
         }
 
         private void OnValidate()
@@ -51,8 +72,12 @@ namespace Player
             UpdateHeldItemRotation();
         }
 
+        public bool preventRotationUpdate = false;
+
         private void UpdateHeldItemRotation()
         {
+            if (preventRotationUpdate) return;
+
             if (_heldItem != null)
             {
                 // Check if the item has specific settings
@@ -86,12 +111,12 @@ namespace Player
             if (_heldItem != null)
             {
                 // Prevent dropping if it's the Balisong
-                string heldName = _heldItem.name.ToLower();
-                if (heldName.Contains("balisong"))
-                {
-                    Debug.Log("Cannot drop Balisong!");
-                    return;
-                }
+                // string heldName = _heldItem.name.ToLower();
+                // if (heldName.Contains("balisong"))
+                // {
+                //    Debug.Log("Cannot drop Balisong!");
+                //    return;
+                // }
                 
                 DropItem();
             }
@@ -108,7 +133,7 @@ namespace Player
 
             foreach (Collider collider in colliders)
             {
-                Debug.Log($"Found object in range: {collider.name} (Tag: {collider.tag})"); // DEBUG
+                // Debug.Log($"Found object in range: {collider.name} (Tag: {collider.tag})"); // DEBUG
                 if (itemTags.Contains(collider.tag))
                 {
                     float distance = Vector3.Distance(_cameraTransform.position, collider.transform.position);
@@ -123,31 +148,127 @@ namespace Player
             if (bestTarget != null)
             {
                 string lowerName = bestTarget.name.ToLower();
-                // Check if it's a "consumable" inventory item (Masks, Paper/Document)
-                if (lowerName.Contains("mask") || lowerName.Contains("paper") || lowerName.Contains("document"))
+                
+                // 1. Consumables (Mask, Paper but NOT Document)
+                if ((lowerName.Contains("mask") || lowerName.Contains("paper")) && !lowerName.Contains("document"))
                 {
                     if (UI.InventoryUI.Instance != null)
                     {
                         UI.InventoryUI.Instance.UpdateItemStatus(bestTarget.name, true);
                     }
+                    Debug.Log($"Consumed Item: {bestTarget.name}");
                     Destroy(bestTarget.gameObject);
+                    return true;
+                }
+
+                // 2. Determine Slot Type
+                bool isDocument = lowerName.Contains("document");
+                bool isWeapon = lowerName.Contains("balisong") || lowerName.Contains("knife") || lowerName.Contains("weapon");
+
+                if (isDocument)
+                {
+                    // Pickup Document
+                    PickupToSlot(bestTarget, 2);
                     return true;
                 }
                 else
                 {
-                    // Physical item (e.g. Balisong/Knife/Weapon)
-                    // If hands are empty, pickup. If full, return false (so we can drop or do nothing)
-                    if (_heldItem == null)
-                    {
-                        PickupItem(bestTarget);
-                        return true;
-                    }
-                    
-                    return false;
+                    // Default to Weapon Slot (1) if it's an Item/Weapon/Everything else
+                    PickupToSlot(bestTarget, 1);
+                    return true;
                 }
             }
             
             return false;
+        }
+
+        private void PickupToSlot(Transform item, int slotIndex)
+        {
+            // 1. If slot is occupied, drop current item in that slot
+            Transform previousItem = (slotIndex == 1) ? _weaponSlot : _documentSlot;
+            
+            if (previousItem != null)
+            {
+                // If we are currently holding the item we are about to replace, drop it properly
+                if (_heldItem == previousItem)
+                {
+                   DropItem(); // Drop physically
+                }
+                else
+                {
+                    // If it's in the pocket (inactive), just unparent and enable it at current position
+                    previousItem.SetParent(null);
+                    previousItem.gameObject.SetActive(true);
+                    
+                    // Enable Physics
+                    Rigidbody rb = previousItem.GetComponent<Rigidbody>();
+                    if (rb != null) { rb.isKinematic = false; rb.useGravity = true; }
+                    Collider col = previousItem.GetComponent<Collider>();
+                    if (col != null) col.enabled = true;
+                }
+            }
+
+            // 2. Assign logic
+            if (slotIndex == 1) _weaponSlot = item;
+            else _documentSlot = item;
+
+            // 3. Equip logic (Switch to this slot immediately)
+            SwitchToSlot(slotIndex);
+        }
+
+        private void SwitchToSlot(int slotIndex)
+        {
+             // Disable current held item visuals (put in pocket)
+            if (_heldItem != null)
+            {
+                _heldItem.gameObject.SetActive(false);
+            }
+
+            // Determine new item
+            Transform newItem = (slotIndex == 1) ? _weaponSlot : _documentSlot;
+
+            if (newItem != null)
+            {
+                _heldItem = newItem;
+                _heldItem.gameObject.SetActive(true);
+                InitializeHeldItem(_heldItem); // Setup physics/parenting
+                Debug.Log($"Switched to Slot {slotIndex}: {_heldItem.name}");
+            }
+            else
+            {
+                _heldItem = null;
+                Debug.Log($"Switched to Slot {slotIndex}: [Empty]");
+            }
+        }
+
+        private void InitializeHeldItem(Transform item)
+        {
+            _heldRigidbody = item.GetComponent<Rigidbody>();
+            _heldCollider = item.GetComponent<Collider>();
+
+            // Disable Physics
+            if (_heldRigidbody != null)
+            {
+                _heldRigidbody.isKinematic = true;
+                _heldRigidbody.useGravity = false;
+            }
+
+            // Disable Collision
+            if (_heldCollider != null)
+            {
+                _heldCollider.enabled = false;
+            }
+
+            // Update UI
+            if (UI.InventoryUI.Instance != null)
+            {
+                UI.InventoryUI.Instance.UpdateItemStatus(item.name, true);
+            }
+
+            // Parent to Hold Position
+            item.SetParent(holdPosition);
+            item.localPosition = Vector3.zero;
+            UpdateHeldItemRotation();
         }
 
         private void OnDrawGizmosSelected()
@@ -161,35 +282,32 @@ namespace Player
             }
         }
 
-        private void PickupItem(Transform item)
+        private void PickupItem(Transform item) 
         {
-            _heldItem = item;
-            _heldRigidbody = item.GetComponent<Rigidbody>();
-            _heldCollider = item.GetComponent<Collider>();
+            // Legacy wrapper - redirects to slot 1 for now if called internally
+            PickupToSlot(item, 1);
+        }
 
-            // Disable Physics
-            if (_heldRigidbody != null)
-            {
-                _heldRigidbody.isKinematic = true;
-                _heldRigidbody.useGravity = false;
-            }
-
-            // Disable Collision (optional, prevents pushing player)
-            if (_heldCollider != null)
-            {
-                _heldCollider.enabled = false;
-            }
+        public void ConsumeHeldItem()
+        {
+            if (_heldItem == null) return;
 
             // Update UI
             if (UI.InventoryUI.Instance != null)
             {
-                UI.InventoryUI.Instance.UpdateItemStatus(_heldItem.name, true);
+                UI.InventoryUI.Instance.UpdateItemStatus(_heldItem.name, false);
             }
 
-            // Parent to Hold Position
-            _heldItem.SetParent(holdPosition);
-            _heldItem.localPosition = Vector3.zero;
-            UpdateHeldItemRotation();
+            // Remove from Slot Reference
+            if (_heldItem == _weaponSlot) _weaponSlot = null;
+            if (_heldItem == _documentSlot) _documentSlot = null;
+
+            Destroy(_heldItem.gameObject);
+
+            // Clear ref
+            _heldItem = null;
+            _heldRigidbody = null;
+            _heldCollider = null;
         }
 
         private void DropItem()
@@ -201,7 +319,6 @@ namespace Player
             {
                 _heldRigidbody.isKinematic = false;
                 _heldRigidbody.useGravity = true;
-                // Add diverse throw force? For now just drop.
             }
 
             // Enable Collision
@@ -215,6 +332,10 @@ namespace Player
             {
                 UI.InventoryUI.Instance.UpdateItemStatus(_heldItem.name, false);
             }
+
+            // Remove from Slot Reference
+            if (_heldItem == _weaponSlot) _weaponSlot = null;
+            if (_heldItem == _documentSlot) _documentSlot = null;
 
             // Unparent
             _heldItem.SetParent(null);

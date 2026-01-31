@@ -14,6 +14,19 @@ public class ZombieNPCDetect : MonoBehaviour
     public bool inFOV = false;
     public bool inRange = false;
 
+    // Static registry for VignetteEffect to access
+    public static List<ZombieNPCDetect> AllZombies = new List<ZombieNPCDetect>();
+
+    private void OnEnable()
+    {
+        AllZombies.Add(this);
+    }
+
+    private void OnDisable()
+    {
+        AllZombies.Remove(this);
+    }
+
     void Update()
     {
         DetectAll(transform.position, rangeOfView);
