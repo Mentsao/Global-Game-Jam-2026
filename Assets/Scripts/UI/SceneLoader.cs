@@ -5,7 +5,11 @@ public class SceneLoader : MonoBehaviour
 {
     public void LoadGameScene()
     {
-        SceneManager.LoadScene("Tutorial");
+        SceneManager.LoadScene("GameScene");
+    }
+    public void LoadTitleScene()
+    {
+        SceneManager.LoadScene("TitleScene");
     }
 
     public void QuitGame()

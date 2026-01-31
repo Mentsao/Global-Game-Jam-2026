@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
-using Player; 
+using Player;
+using Unity.VisualScripting;
 
 // Make sure your Filename is "PoilceNPC.cs" (typo preserved to match file)
 public class PoliceNPC : MonoBehaviour
@@ -29,6 +30,9 @@ public class PoliceNPC : MonoBehaviour
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float lineTime = 5f; // Wait time before clearing line
     [SerializeField] private float timer;
+    public bool hasEntered = false;
+    private PlayerPickup playerPickup;
+
 
     [Header("Patrol Settings")]
     [SerializeField] private float patrolRadius = 15f;
@@ -92,6 +96,9 @@ public class PoliceNPC : MonoBehaviour
 
     private void HandleLineLogic()
     {
+        if (!playerPickup.isWeapon) return;
+        if (!hasEntered) return;
+
         // Waiting for line to clear
         timer += Time.deltaTime;
 
@@ -168,6 +175,7 @@ public class PoliceNPC : MonoBehaviour
     private void FindPlayer()
     {
         GameObject p = GameObject.FindGameObjectWithTag("Player");
+        playerPickup = player.gameObject.GetComponent<PlayerPickup>();
         if (p != null) player = p.transform;
     }
 
