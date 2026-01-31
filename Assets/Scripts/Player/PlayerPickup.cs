@@ -7,6 +7,8 @@ namespace Player
     {
         [Header("Pickup Settings")]
         [SerializeField] private Transform holdPosition;
+        [SerializeField] private Transform weaponHoldSlot;
+        [SerializeField] private Transform maskHoldSlot;
         [SerializeField] private Vector3 holdRotation = Vector3.zero;
         [SerializeField] private float pickupRange = 3f;
         [Header("Audio")]
@@ -307,57 +309,36 @@ namespace Player
         {
             _isAnimatingMask = true;
             
-            // If Unequipping, we must show the mask first
-            if (!equip)
+            // Get Animator from the Mask Hold Slot
+            Animator maskSlotAnim = null;
+            if (maskHoldSlot != null) maskSlotAnim = maskHoldSlot.GetComponent<Animator>();
+
+            if (maskSlotAnim != null)
             {
-                _heldItem.gameObject.SetActive(true);
+                if (equip)
+                {
+                    maskSlotAnim.SetTrigger("MaskOn");
+                }
+                else
+                {
+                    // If Unequipping, show the mask first so it can animate off
+                     if (_heldItem != null) _heldItem.gameObject.SetActive(true);
+                    maskSlotAnim.SetTrigger("MaskOff");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("PlayerPickup: No Animator found on Mask Hold Slot!");
             }
 
-            float duration = 0.25f; // Slight tweak for snappiness
-            float elapsed = 0f;
-
-            // Define "Face" position (relative to camera/holder)
-            // Closer to camera for the "slap" effect
-            Vector3 facePos = new Vector3(0, 0, 0.2f); 
-            Quaternion faceRot = Quaternion.Euler(0, 180, 0); 
-
-            // Define "Hand" position
-            Interaction.PickupableItem settings = _heldItem.GetComponent<Interaction.PickupableItem>();
-            Vector3 handPos = (settings != null) ? settings.holdPositionOffset : Vector3.zero;
-            Quaternion handRot = (settings != null) ? Quaternion.Euler(settings.holdRotation) : Quaternion.Euler(holdRotation);
-
-            Vector3 startPos = equip ? handPos : facePos;
-            Quaternion startRot = equip ? handRot : faceRot;
-            
-            Vector3 targetPos = equip ? facePos : handPos;
-            Quaternion targetRot = equip ? faceRot : handRot; // Corrected logic
-
-            // Force start position if unequipping (since it was hidden)
-            if (!equip)
-            {
-                _heldItem.localPosition = startPos;
-                _heldItem.localRotation = startRot;
-            }
-
-            while (elapsed < duration)
-            {
-                float t = elapsed / duration;
-                // Linear or EaseOutBack
-                _heldItem.localPosition = Vector3.Lerp(startPos, targetPos, t);
-                _heldItem.localRotation = Quaternion.Lerp(startRot, targetRot, t);
-                
-                elapsed += Time.deltaTime;
-                yield return null;
-            }
-
-            _heldItem.localPosition = targetPos;
-            _heldItem.localRotation = targetRot;
+            //// Wait for animation duration (adjust as needed or check clip length)
+            yield return new WaitForSeconds(1f);
 
             _isMaskEquipped = equip;
             _isAnimatingMask = false;
             
-            // If Equipped, hide the mask now
-            if (equip)
+            // If Equipped (and animation finished), hide the mask object (assuming off-screen or on face model)
+            if (equip && _heldItem != null)
             {
                 _heldItem.gameObject.SetActive(false);
             }
@@ -412,7 +393,18 @@ namespace Player
             }
 
             // Parent to Hold Position
-            item.SetParent(holdPosition);
+            Transform itemParent = holdPosition; // Default
+
+            if (item == _weaponSlot && weaponHoldSlot != null)
+            {
+                itemParent = weaponHoldSlot;
+            }
+            else if ((item == _maskSlot1 || item == _maskSlot2) && maskHoldSlot != null)
+            {
+                itemParent = maskHoldSlot;
+            }
+
+            item.SetParent(itemParent);
             item.localPosition = Vector3.zero;
             UpdateHeldItemRotation();
         }
