@@ -38,6 +38,8 @@ public class PoliceNPC : MonoBehaviour
     [Header("Interaction")]
     [SerializeField] private float interactionDistance = 2.0f;
 
+    private AudioSource audioSource;
+
     // Internal
     private string _currentAnimState = "";
 
@@ -50,6 +52,15 @@ public class PoliceNPC : MonoBehaviour
     private void Start()
     {
         FindPlayer();
+
+        // Setup 3D Audio via AudioManager
+        audioSource = gameObject.AddComponent<AudioSource>();
+        
+        // Start Waiting Loop if in that state
+        if (currentState == PoliceState.WaitingInLine && AudioManager.Instance != null)
+        {
+            AudioManager.Instance.PlaySpatialPoliceLoop(audioSource);
+        }
     }
 
     private void Update()
@@ -96,7 +107,17 @@ public class PoliceNPC : MonoBehaviour
         if (npcLine.Count == 0 || debugForceChase)
         {
             // Debug.Log("[PoliceNPC] Line Empty! Switching to CHASE.");
+            // Debug.Log("[PoliceNPC] Line Empty! Switching to CHASE.");
             currentState = PoliceState.Chasing;
+            if (audioSource != null && audioSource.isPlaying)
+            {
+                audioSource.Stop();
+            }
+
+            if (AudioManager.Instance != null) 
+            {
+                AudioManager.Instance.PlayPoliceDetect();
+            }
         }
     }
 

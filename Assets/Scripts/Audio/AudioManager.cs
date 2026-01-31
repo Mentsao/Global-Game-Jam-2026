@@ -32,6 +32,10 @@ public class AudioManager : MonoBehaviour
     [Header("Police SFX")]
     [SerializeField] private AudioClip policePass;
     [SerializeField] private AudioClip policeFail;
+    [SerializeField] private AudioClip policeDetect;
+    [SerializeField] private AudioClip policeWaitLoop;
+    [SerializeField] private float policeLoopMinDist = 2f;
+    [SerializeField] private float policeLoopMaxDist = 15f;
 
     [Header("Atmosphere")]
     [SerializeField] private AudioClip tensionLoop;
@@ -155,6 +159,31 @@ public class AudioManager : MonoBehaviour
         AudioClip clip = approved ? policePass : policeFail;
         if (clip != null) sfxSource.PlayOneShot(clip, 1.0f * sfxVolume * masterVolume);
     }
+
+    public void PlayPoliceDetect()
+    {
+        if (policeDetect != null) sfxSource.PlayOneShot(policeDetect, 1.0f * sfxVolume * masterVolume);
+    }
+
+    /// <summary>
+    /// Configures a target AudioSource for 3D spatial police waiting loop
+    /// </summary>
+    public void PlaySpatialPoliceLoop(AudioSource targetSource)
+    {
+        if (targetSource == null || policeWaitLoop == null) return;
+
+        targetSource.clip = policeWaitLoop;
+        targetSource.loop = true;
+        targetSource.spatialBlend = 1.0f; // 3D
+        targetSource.rolloffMode = AudioRolloffMode.Logarithmic;
+        targetSource.minDistance = policeLoopMinDist;
+        targetSource.maxDistance = policeLoopMaxDist;
+        targetSource.volume = sfxVolume * masterVolume;
+        
+        targetSource.Play();
+    }
+
+
 
     // --- ATMOSPHERE ---
     private Coroutine tensionCoroutine;
