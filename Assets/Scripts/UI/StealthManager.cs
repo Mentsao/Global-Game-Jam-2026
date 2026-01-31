@@ -50,6 +50,15 @@ namespace UI
                 _currentStealth -= defaultDecay * Time.deltaTime;
                 _currentStealth = Mathf.Max(0, _currentStealth);
                 UpdateUI();
+
+                // Check for Scorched Earth Deactivation (< 70%)
+                if (ScorchedEarthManager.Instance != null && ScorchedEarthManager.Instance.IsActive)
+                {
+                    if (_currentStealth / maxStealth < 0.7f)
+                    {
+                        ScorchedEarthManager.Instance.StopScorchedEarth();
+                    }
+                }
             }
         }
 

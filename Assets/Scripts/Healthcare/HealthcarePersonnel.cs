@@ -55,6 +55,19 @@ public class HealthcarePersonnel : MonoBehaviour
 
     void Update()
     {
+        // 0. Scorched Earth Check
+        if (ScorchedEarthManager.Instance != null && ScorchedEarthManager.Instance.IsActive)
+        {
+            if (_isFollowing)
+            {
+                // Betray player immediately
+                StopFollowing();
+            }
+            HostileBehavior();
+            UpdateAnimationState();
+            return; // Skip normal behavior
+        }
+
         // 1. Detection Logic (Trigger Box)
         DetectPlayer();
 
@@ -246,6 +259,39 @@ public class HealthcarePersonnel : MonoBehaviour
         {
             _animator.CrossFade(newState, animTransitionTime);
             _currentAnimState = newState;
+        }
+    }
+
+    private void HostileBehavior()
+    {
+        // Re-acquire player if needed
+        if (_playerTransform == null)
+        {
+             GameObject p = GameObject.FindGameObjectWithTag("Player");
+             if (p != null) _playerTransform = p.transform;
+             else return;
+        }
+
+        float dist = Vector3.Distance(transform.position, _playerTransform.position);
+
+        if (dist <= stopDistance)
+        {
+            // In Attack Range
+            if (Time.time >= _lastAttackTime + attackCooldown)
+            {
+                _lastAttackTime = Time.time;
+                StartCoroutine(PlayAttackAnimation());
+                
+                var hp = _playerTransform.GetComponent<Player.PlayerHealth>();
+                if (hp != null) hp.TakeDamage(1);
+            }
+        }
+        else
+        {
+            // Chase
+            Vector3 direction = (_playerTransform.position - transform.position).normalized;
+            transform.position += direction * (moveSpeed * 1.5f) * Time.deltaTime; // Faster chase
+            transform.LookAt(new Vector3(_playerTransform.position.x, transform.position.y, _playerTransform.position.z));
         }
     }
 

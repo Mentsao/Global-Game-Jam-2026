@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 1
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 747972181}
+  m_SkyboxMaterial: {fileID: 1555090357}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -1360,8 +1360,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScorchedEarthManager
   detectionRadius: 50
-  breadcrumbDistance: 2
-  arrivalDistance: 2
+  breadcrumbDistance: 0
+  arrivalDistance: 0
   waypointWaitTime: 0
   npcLayer:
     serializedVersion: 2
@@ -2774,40 +2774,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7075061741930890650, guid: 4237c7466f469254f978921896cf9c7e, type: 3}
   m_PrefabInstance: {fileID: 7320061982133484343}
   m_PrefabAsset: {fileID: 0}
---- !u!21 &747972181
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: ApocalypseSkybox
-  m_Shader: {fileID: 4800000, guid: 1532f53324586a147a004f04e19bc6b7, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs: []
-    m_Ints: []
-    m_Floats:
-    - _SmogDensity: 4
-    - _SmogSpeed: 0.5
-    m_Colors:
-    - _BottomColor: {r: 0.05, g: 0.1, b: 0.1, a: 1}
-    - _HorizonColor: {r: 0.1, g: 0.3, b: 0.25, a: 1}
-    - _SmogColor: {r: 0.1, g: 0.4, b: 0.3, a: 0.5}
-    - _TopColor: {r: 0.1, g: 0.15, b: 0.15, a: 1}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!1 &751023379
 GameObject:
   m_ObjectHideFlags: 0
@@ -5469,6 +5435,40 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1520929654}
   m_CullTransparentMesh: 1
+--- !u!21 &1555090357
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ApocalypseSkybox
+  m_Shader: {fileID: 4800000, guid: 1532f53324586a147a004f04e19bc6b7, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _SmogDensity: 4
+    - _SmogSpeed: 0.5
+    m_Colors:
+    - _BottomColor: {r: 0.05, g: 0.1, b: 0.1, a: 1}
+    - _HorizonColor: {r: 0.1, g: 0.3, b: 0.25, a: 1}
+    - _SmogColor: {r: 0.1, g: 0.4, b: 0.3, a: 0.5}
+    - _TopColor: {r: 0.1, g: 0.15, b: 0.15, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1 &1574920477
 GameObject:
   m_ObjectHideFlags: 0

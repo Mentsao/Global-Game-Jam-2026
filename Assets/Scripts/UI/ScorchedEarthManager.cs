@@ -19,6 +19,7 @@ public class ScorchedEarthManager : MonoBehaviour
 
     [Header("Debug")]
     [SerializeField] private bool isScorchedEarthActive = false;
+    public bool IsActive => isScorchedEarthActive;
     [SerializeField] private List<Vector3> breadcrumbs = new List<Vector3>();
 
     // Track which node each swarming NPC is currently targeting
@@ -75,11 +76,30 @@ public class ScorchedEarthManager : MonoBehaviour
         // Find NPCs
         WakeUpNPCs();
 
-        // Trigger Visuals
+        // Trig Visuals
         if (UI.VignetteEffect.Instance != null)
         {
             UI.VignetteEffect.Instance.SetForcedDanger(true);
         }
+    }
+
+    public void StopScorchedEarth()
+    {
+        if (!isScorchedEarthActive) return;
+
+        Debug.Log("[Scorched Earth] SYSTEM DEACTIVATED. Returning to normal.");
+        isScorchedEarthActive = false;
+
+        // Reset Visuals
+        if (UI.VignetteEffect.Instance != null)
+        {
+            UI.VignetteEffect.Instance.SetForcedDanger(false);
+        }
+
+        // Clear Swarm Data so they don't keep chasing ghost trails
+        breadcrumbs.Clear();
+        swarmAgents.Clear();
+        swarmWaitTimers.Clear();
     }
 
     private void WakeUpNPCs()
