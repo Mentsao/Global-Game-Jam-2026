@@ -153,6 +153,12 @@ public class AudioManager : MonoBehaviour
         if (attackSwing != null) sfxSource.PlayOneShot(attackSwing, 0.8f * sfxVolume * masterVolume);
     }
 
+    [SerializeField] private AudioClip impactSFX;
+    public void PlayImpact()
+    {
+        if (impactSFX != null) sfxSource.PlayOneShot(impactSFX, 0.8f * sfxVolume * masterVolume);
+    }
+
     // --- ZOMBIE ---
     public void PlayZombieGrowl()
     {

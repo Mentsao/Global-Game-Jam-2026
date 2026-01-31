@@ -1,71 +1,174 @@
 using UnityEngine;
+using Player; 
 
+// Requires NPCDetect for vision logic
 [RequireComponent(typeof(NPCDetect))]
 public class GovernmentOfficial : MonoBehaviour
 {
-    private NPCDetect detection;
-    
-    [Header("Movement")]
-    public float moveSpeed = 2f; 
-    public float stopDistance = 5f; 
+    [Header("Government Logic")]
+    [Tooltip("If true, the official is currently tracking the player state via NPCDetect")]
+    public bool isTracking = false;
 
     [Header("Stats")]
     public float health = 100f;
-    public bool isVulnerable = false;
+
+    [Header("Vulnerability Settings")]
+    [Tooltip("Angle cone for Front/Back invulnerability (in degrees). Default 60 means +/- 60 degrees from Forward/Backward.")]
+    [Range(0, 90)] public float protectionAngle = 60f;
+
+    private NPCDetect _detection;
 
     void Start()
     {
-        detection = GetComponent<NPCDetect>();
-        detection.fieldOfView = 175f; 
-        detection.rangeOfView = 25f; 
+        _detection = GetComponent<NPCDetect>();
+        
+        // Physics Safeguard: Prevent tipping over
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezePositionY; 
+            // Note: We might want gravity? If so remove FreezePositionY. 
+            // Usually FreezeRotation is enough. Let's stick to Rotation.
+            rb.constraints = RigidbodyConstraints.FreezeRotation;
+        }
     }
 
     void Update()
     {
-        if (detection.player == null) return;
-
-        bool canSeePlayer = detection.inFOV && detection.detectsPlayer;
-
-        if (canSeePlayer)
+        // NPCDetect handles the "LookAt" logic if it detects the player
+        if (_detection != null)
         {
-            Debug.Log("Government Official is tracking you...");
-            FollowPlayer();
+            isTracking = _detection.detectsPlayer && _detection.inFOV;
+            // The constraint "they will not chase... just look at them" is handled by 
+            // NPCDetect.LookAtPlayer() which rotates only. 
+            // Ensure no movement logic is here or in NPCDetect (checked: NPCDetect only looks).
         }
     }
 
-    void FollowPlayer()
+    /// <summary>
+    /// Call this method to deal damage to the Government Official.
+    /// Requires the attacker's Transform to calculate relative angle.
+    /// </summary>
+    public void TakeDamage(float damage, Transform attacker)
     {
-        float distance = Vector3.Distance(transform.position, detection.player.position);
-        
-        if (distance > stopDistance)
-        {
-            Vector3 direction = (detection.player.position - transform.position).normalized;
-            transform.position += direction * moveSpeed * Time.deltaTime;
-        }
-        
-        transform.LookAt(detection.player.position);
-    }
+        if (attacker == null) return;
 
-    public void TakeDamage(float damage)
-    {
-        if (isVulnerable)
+        Vector3 toAttacker = (attacker.position - transform.position).normalized;
+        float dot = Vector3.Dot(transform.forward, toAttacker);
+        
+        // Calculate Threshold for Protection
+        // Dot Product of 1 is directly in front. 
+        // Dot Product of -1 is directly behind.
+        // Dot Product of 0 is side.
+        // 60 degrees -> cos(60) = 0.5.
+        // So if Dot > 0.5 (Front) OR Dot < -0.5 (Back), we are protected.
+        
+        float threshold = Mathf.Cos(protectionAngle * Mathf.Deg2Rad);
+
+        bool isFront = dot > threshold;
+        bool isBack = dot < -threshold;
+
+        if (isFront || isBack)
         {
-            health -= damage;
+            // Protected! Kill Player.
+            Debug.Log("[Government] Attacked from Front/Back! INSTANT DEATH EXECUTION.");
+            KillPlayer(attacker);
         }
         else
         {
-            health -= damage * 0.1f;
-        }
-
-        if (health <= 0)
-        {
-            Die();
+            // Side Attack - Vulnerable
+            health -= damage;
+            Debug.Log($"[Government] Side Attack Success! Health: {health}");
+            
+            if (health <= 0)
+            {
+                Die();
+            }
         }
     }
 
-    void Die()
+    // fallback: Trigger check for weapon collisions
+    private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("Official Killed. Player can now take the Official Mask.");
+        // Simple heuristic: If it's a weapon layer or tag, or child of Player
+        // Adjust these tags based on your project structure
+        if (other.CompareTag("Weapon") || (other.transform.parent != null && other.transform.parent.CompareTag("Player")))
+        {
+            // Find Player Root
+            Transform playerRoot = other.transform.root; 
+            if (playerRoot.CompareTag("Player"))
+            {
+                // Deal damage (default 10 or similar)
+                TakeDamage(10, playerRoot);
+            }
+        }
+    }
+
+    private void KillPlayer(Transform playerTransform)
+    {
+        PlayerHealth ph = playerTransform.GetComponent<PlayerHealth>();
+        if (ph != null)
+        {
+            ph.TakeDamage(9999); // Instant Kill
+        }
+        else
+        {
+            // Try in children/parents
+             ph = playerTransform.GetComponentInParent<PlayerHealth>();
+             if (ph != null) ph.TakeDamage(9999);
+        }
+    }
+
+    private void Die()
+    {
+        Debug.Log("[Government] Official Eliminate.");
+        // Logic for dropping loot/mask can go here
         Destroy(gameObject);
+    }
+
+    private void OnDrawGizmos()
+    {
+        // Visualize Vulnerability Zones
+        // Red = Danger (Front/Back)
+        // Green = Vulnerable (Sides)
+
+        Vector3 pos = transform.position + Vector3.up * 1f; // slight offset up
+        float radius = 1.5f;
+
+        // Draw Arcs is hard in Gizmos without specific handle tools, using Lines approx
+        
+        float angle = protectionAngle;
+        
+        // Front Cone (Red)
+        Gizmos.color = new Color(1f, 0f, 0f, 0.5f);
+        DrawCone(pos, transform.forward, angle, radius);
+
+        // Back Cone (Red)
+        DrawCone(pos, -transform.forward, angle, radius);
+
+        // Side Cones (Green) - Implicitly the space between
+        // To visualize sides, we can draw lines for the boundaries
+        Gizmos.color = Color.green;
+        // Right Side Center
+        // Gizmos.DrawLine(pos, pos + transform.right * radius);
+        // Left Side Center
+        // Gizmos.DrawLine(pos, pos - transform.right * radius);
+    }
+
+    private void DrawCone(Vector3 pos, Vector3 forward, float angleDeg, float radius)
+    {
+        Quaternion leftRayRotation = Quaternion.AngleAxis(-angleDeg, Vector3.up);
+        Quaternion rightRayRotation = Quaternion.AngleAxis(angleDeg, Vector3.up);
+
+        Vector3 leftRayDirection = leftRayRotation * forward;
+        Vector3 rightRayDirection = rightRayRotation * forward;
+
+        Gizmos.DrawLine(pos, pos + forward * radius);
+        Gizmos.DrawLine(pos, pos + leftRayDirection * radius);
+        Gizmos.DrawLine(pos, pos + rightRayDirection * radius);
+        
+        // Connect the tips to indicate "Zone"
+        Gizmos.DrawLine(pos + leftRayDirection * radius, pos + forward * radius);
+        Gizmos.DrawLine(pos + rightRayDirection * radius, pos + forward * radius);
     }
 }

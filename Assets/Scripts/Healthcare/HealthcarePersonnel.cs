@@ -130,6 +130,14 @@ public class HealthcarePersonnel : MonoBehaviour
                 hp.GrantBonusHealth(1);
                 
                 _isFollowing = true;
+                
+                // Destroy player's masks
+                var pickup = _playerTransform.GetComponent<Player.PlayerPickup>();
+                if (pickup != null)
+                {
+                    pickup.DestroyAllMasks();
+                }
+
                 Debug.Log("[Healthcare] Player entered trigger. Following started.");
             }
         }

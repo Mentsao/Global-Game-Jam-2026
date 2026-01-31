@@ -14,7 +14,18 @@ namespace Player
         [SerializeField] private Vector3 slashMoveOffset = new Vector3(0.5f, -0.2f, 0.5f); // Move forward and slightly down/side
         [SerializeField] private float slashDuration = 0.25f;
 
+        [Header("Combat Settings")]
+        [SerializeField] private int attackDamage = 1;
+        [SerializeField] private float attackRange = 2.5f;
+        [SerializeField] private LayerMask attackLayer = ~0; // Default to Everything
+
+        private Transform _camTransform;
         private bool _isAttacking = false;
+
+        private void Awake()
+        {
+            if (Camera.main != null) _camTransform = Camera.main.transform;
+        }
 
         private void Start()
         {
@@ -98,6 +109,9 @@ namespace Player
             item.localRotation = targetRot;
             item.localPosition = targetPos;
 
+            // HIT CHECK AT APEX
+            CheckForHit();
+
             // Return Swing (Fast)
             elapsed = 0f;
             while (elapsed < halfDuration)
@@ -111,9 +125,50 @@ namespace Player
             item.localRotation = startRot;
             item.localPosition = startPos;
 
-            // 2. Return control
             playerPickup.preventRotationUpdate = false;
             _isAttacking = false;
+        }
+
+        private void CheckForHit()
+        {
+            if (_camTransform == null)
+            {
+                 if (Camera.main != null) _camTransform = Camera.main.transform;
+                 if (_camTransform == null) return;
+            }
+
+            RaycastHit hit;
+            // Raycast slightly forward from camera
+            if (Physics.Raycast(_camTransform.position, _camTransform.forward, out hit, attackRange, attackLayer))
+            {
+                // Debug.Log($"[Attack] Hit: {hit.collider.name}");
+
+                // 1. Check for Government Official (Specific directional logic)
+                GovernmentOfficial gov = hit.transform.GetComponent<GovernmentOfficial>();
+                if (gov == null) gov = hit.transform.GetComponentInParent<GovernmentOfficial>();
+                
+                if (gov != null)
+                {
+                    // Scale damage: NPCHealth is usually small int (3), Gov is float (100). 
+                    // Assuming attackDamage 1 = 1/3 of a normal enemy. 
+                    // So 1 damage -> ~34 damage to Gov (3 hits to kill).
+                    float dmg = (float)attackDamage * 34f; 
+                    gov.TakeDamage(dmg, transform); 
+                    
+                    if (AudioManager.Instance != null) AudioManager.Instance.PlayImpact();
+                    return;
+                }
+
+                // 2. Check for Generic NPC Health
+                NPCHealth npc = hit.transform.GetComponent<NPCHealth>();
+                if (npc == null) npc = hit.transform.GetComponentInParent<NPCHealth>();
+
+                if (npc != null)
+                {
+                    npc.TakeDamage(attackDamage);
+                    if (AudioManager.Instance != null) AudioManager.Instance.PlayImpact();
+                }
+            }
         }
     }
 }

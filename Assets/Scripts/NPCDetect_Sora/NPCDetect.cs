@@ -69,7 +69,9 @@ public class NPCDetect : MonoBehaviour
 
     void LookAtPlayer()
     {
-        transform.LookAt(player.position);
+        // Fix: Project player position to NPC's height to prevent tilting/toppling
+        Vector3 lookTarget = new Vector3(player.position.x, transform.position.y, player.position.z);
+        transform.LookAt(lookTarget);
     }
 
     void OnDrawGizmos()

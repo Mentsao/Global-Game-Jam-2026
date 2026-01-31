@@ -506,5 +506,46 @@ namespace Player
             _heldRigidbody = null;
             _heldCollider = null;
         }
+        public void DestroyAllMasks()
+        {
+            // 1. Destroy Mask Slot 1
+            if (_maskSlot1 != null)
+            {
+                if (_heldItem == _maskSlot1)
+                {
+                    _heldItem = null;
+                    _heldRigidbody = null;
+                    _heldCollider = null;
+                }
+                
+                if (UI.InventoryUI.Instance != null)
+                    UI.InventoryUI.Instance.UpdateItemStatus(_maskSlot1.name, false);
+
+                Destroy(_maskSlot1.gameObject);
+                _maskSlot1 = null;
+            }
+
+            // 2. Destroy Mask Slot 2
+            if (_maskSlot2 != null)
+            {
+                if (_heldItem == _maskSlot2)
+                {
+                    _heldItem = null;
+                    _heldRigidbody = null;
+                    _heldCollider = null;
+                }
+
+                if (UI.InventoryUI.Instance != null)
+                    UI.InventoryUI.Instance.UpdateItemStatus(_maskSlot2.name, false);
+
+                Destroy(_maskSlot2.gameObject);
+                _maskSlot2 = null;
+            }
+
+            // 3. Reset Mask State if we were equipping/wearing one
+            _isMaskEquipped = false;
+            CurrentMaskType = Items.Masks.MaskType.None;
+            Debug.Log("[PlayerPickup] All masks destroyed by Healthcare Personnel.");
+        }
     }
 }
