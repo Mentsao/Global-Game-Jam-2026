@@ -21,20 +21,23 @@ namespace UI
         {
             if (Input.GetKeyDown(KeyCode.Escape))
             {
-                // If Settings is open, we let it handle escape to close itself (which should bring us back here)
+                Debug.Log("[PauseMenu] ESC Pressed");
+                // If Settings is open, close it
                 if (SettingsPanel.Instance != null && SettingsPanel.Instance.gameObject.activeInHierarchy)
                 {
-                    // Check if the content is actually visible
-                    // (SettingsPanel.cs has a panelContent reference)
+                    Debug.Log("[PauseMenu] Closing Settings");
+                    SettingsPanel.Instance.CloseSettings();
                     return; 
                 }
 
                 if (isPaused)
                 {
+                    Debug.Log("[PauseMenu] Resuming");
                     Resume();
                 }
                 else
                 {
+                    Debug.Log("[PauseMenu] Pausing");
                     Pause();
                 }
             }
