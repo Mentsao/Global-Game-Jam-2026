@@ -1178,6 +1178,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 852332049974639574, guid: ee2df9aed815664438976919a41cac56, type: 3}
+      propertyPath: holdRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 852332049974639574, guid: ee2df9aed815664438976919a41cac56, type: 3}
+      propertyPath: holdRotation.y
+      value: -180
+      objectReference: {fileID: 0}
+    - target: {fileID: 852332049974639574, guid: ee2df9aed815664438976919a41cac56, type: 3}
+      propertyPath: holdRotation.z
+      value: -70
+      objectReference: {fileID: 0}
     - target: {fileID: 2699994643817278021, guid: ee2df9aed815664438976919a41cac56, type: 3}
       propertyPath: m_Name
       value: Balisong
@@ -3175,7 +3187,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 6982490487449122041, guid: aa348a3a15edfc0458d780f74eb79801, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 105.7
+      value: 100.24
       objectReference: {fileID: 0}
     - target: {fileID: 6982490487449122041, guid: aa348a3a15edfc0458d780f74eb79801, type: 3}
       propertyPath: m_LocalPosition.y
@@ -3183,7 +3195,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6982490487449122041, guid: aa348a3a15edfc0458d780f74eb79801, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -6.3
+      value: -2.22
       objectReference: {fileID: 0}
     - target: {fileID: 6982490487449122041, guid: aa348a3a15edfc0458d780f74eb79801, type: 3}
       propertyPath: m_LocalRotation.w
