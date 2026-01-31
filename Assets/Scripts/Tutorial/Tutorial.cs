@@ -86,12 +86,6 @@ public class Tutorial : MonoBehaviour
         }
     }
 
-    public void CheckpointLineUpTutorial()
-    {
-
-    }
-
-    
     // In-game Tutorials
     public void PickUpKnifeTutorial()
     {
