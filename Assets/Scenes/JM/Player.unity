@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 1
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 822013917}
+  m_SkyboxMaterial: {fileID: 71556938}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -119,6 +119,40 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!21 &71556938
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ApocalypseSkybox
+  m_Shader: {fileID: 4800000, guid: 1532f53324586a147a004f04e19bc6b7, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _SmogDensity: 4
+    - _SmogSpeed: 0.5
+    m_Colors:
+    - _BottomColor: {r: 0.05, g: 0.1, b: 0.1, a: 1}
+    - _HorizonColor: {r: 0.1, g: 0.3, b: 0.25, a: 1}
+    - _SmogColor: {r: 0.1, g: 0.4, b: 0.3, a: 0.5}
+    - _TopColor: {r: 0.1, g: 0.15, b: 0.15, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
 --- !u!1 &115500213
 GameObject:
   m_ObjectHideFlags: 0
@@ -631,6 +665,46 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2650607630817986315, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.51311994
+      objectReference: {fileID: 0}
+    - target: {fileID: 2650607630817986315, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.51311994
+      objectReference: {fileID: 0}
+    - target: {fileID: 2650607630817986315, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.51311994
+      objectReference: {fileID: 0}
+    - target: {fileID: 2650607630817986315, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -361.71997
+      objectReference: {fileID: 0}
+    - target: {fileID: 2650607630817986315, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -43.699997
+      objectReference: {fileID: 0}
+    - target: {fileID: 3086718828549327793, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.51311994
+      objectReference: {fileID: 0}
+    - target: {fileID: 3086718828549327793, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.51311994
+      objectReference: {fileID: 0}
+    - target: {fileID: 3086718828549327793, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.51311994
+      objectReference: {fileID: 0}
+    - target: {fileID: 3086718828549327793, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -361.71997
+      objectReference: {fileID: 0}
+    - target: {fileID: 3086718828549327793, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 5.700008
+      objectReference: {fileID: 0}
     - target: {fileID: 4040806038240195388, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
       propertyPath: m_Name
       value: UICanvas
@@ -714,6 +788,66 @@ PrefabInstance:
     - target: {fileID: 4866969464176363975, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6759464295881752677, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.51311994
+      objectReference: {fileID: 0}
+    - target: {fileID: 6759464295881752677, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.51311994
+      objectReference: {fileID: 0}
+    - target: {fileID: 6759464295881752677, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.51311994
+      objectReference: {fileID: 0}
+    - target: {fileID: 6759464295881752677, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -363
+      objectReference: {fileID: 0}
+    - target: {fileID: 6759464295881752677, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -192.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 8192444208001354406, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.51311994
+      objectReference: {fileID: 0}
+    - target: {fileID: 8192444208001354406, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.51311994
+      objectReference: {fileID: 0}
+    - target: {fileID: 8192444208001354406, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.51311994
+      objectReference: {fileID: 0}
+    - target: {fileID: 8192444208001354406, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -363
+      objectReference: {fileID: 0}
+    - target: {fileID: 8192444208001354406, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -94.69999
+      objectReference: {fileID: 0}
+    - target: {fileID: 9006987050782244111, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.51311994
+      objectReference: {fileID: 0}
+    - target: {fileID: 9006987050782244111, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.51311994
+      objectReference: {fileID: 0}
+    - target: {fileID: 9006987050782244111, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.51311994
+      objectReference: {fileID: 0}
+    - target: {fileID: 9006987050782244111, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -363
+      objectReference: {fileID: 0}
+    - target: {fileID: 9006987050782244111, guid: 711cbd4e1683316489812e2c9fb9b382, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -144.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1300,40 +1434,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: ee2df9aed815664438976919a41cac56, type: 3}
---- !u!21 &822013917
-Material:
-  serializedVersion: 8
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: ApocalypseSkybox
-  m_Shader: {fileID: 4800000, guid: 1532f53324586a147a004f04e19bc6b7, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs: []
-    m_Ints: []
-    m_Floats:
-    - _SmogDensity: 4
-    - _SmogSpeed: 0.5
-    m_Colors:
-    - _BottomColor: {r: 0.05, g: 0.1, b: 0.1, a: 1}
-    - _HorizonColor: {r: 0.1, g: 0.3, b: 0.25, a: 1}
-    - _SmogColor: {r: 0.1, g: 0.4, b: 0.3, a: 0.5}
-    - _TopColor: {r: 0.1, g: 0.15, b: 0.15, a: 1}
-  m_BuildTextureStacks: []
-  m_AllowLocking: 1
 --- !u!1 &831906777
 GameObject:
   m_ObjectHideFlags: 0
