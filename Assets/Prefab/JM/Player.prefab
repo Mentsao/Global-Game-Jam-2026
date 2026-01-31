@@ -15,7 +15,9 @@ GameObject:
   - component: {fileID: 7712808793913885139}
   - component: {fileID: 6187237251269097085}
   - component: {fileID: 462147440955213857}
-  m_Layer: 9
+  - component: {fileID: 2164152356805947656}
+  - component: {fileID: 5134811279630051567}
+  m_Layer: 13
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -156,9 +158,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3108c8071366a14f975f4d56e9f89a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Player.PlayerMovement
-  moveSpeed: 5
+  walkSpeed: 5
+  sprintSpeed: 10
+  crouchSpeed: 2.5
   jumpHeight: 1.2
   gravity: -9.81
+  standingHeight: 2
+  crouchHeight: 1
+  crouchTransitionSpeed: 10
+  standingCenter: {x: 0, y: 0, z: 0}
+  crouchCenter: {x: 0, y: -0.5, z: 0}
   cameraTransform: {fileID: 6425278350832061274}
   mouseSensitivity: 65.6
   topClamp: 90
@@ -178,6 +187,7 @@ MonoBehaviour:
   holdPosition: {fileID: 463178522080104352}
   holdRotation: {x: 0, y: 0, z: 0}
   pickupRange: 3
+  audioSource: {fileID: 0}
   pickupLayer:
     serializedVersion: 2
     m_Bits: 7168
@@ -185,6 +195,45 @@ MonoBehaviour:
   - Item
   - Document
   - Weapon
+  preventRotationUpdate: 0
+--- !u!114 &2164152356805947656
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1007246993073906416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcda838abcf0852428e9afa3f50166af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Player.PlayerAttack
+  playerPickup: {fileID: 462147440955213857}
+  slashRotation: {x: 80, y: 0, z: 0}
+  slashMoveOffset: {x: 0, y: 0, z: 2}
+  slashDuration: 0.25
+--- !u!114 &5134811279630051567
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1007246993073906416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474f689f8e8aa6f41b057284964f639f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlashlightController
+  flashlight: {fileID: 8614561358586215005}
+  audioSource: {fileID: 0}
+  toggleSound: {fileID: 0}
+  flickerSound: {fileID: 0}
+  isOn: 1
+  baseIntensity: 1.8
+  enableFlicker: 1
+  flickerChance: 0.02
+  canBlackout: 1
+  instabilityRate: 0.005
 --- !u!1 &2109172963043345129
 GameObject:
   m_ObjectHideFlags: 0
@@ -198,7 +247,7 @@ GameObject:
   - component: {fileID: 5176681974027372527}
   - component: {fileID: 774244954260909818}
   - component: {fileID: 6757437604757116360}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
@@ -217,7 +266,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0.527, z: 0.259}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 30976583376532468}
   m_Father: {fileID: 7075061741930890650}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &2586500130854723445
@@ -348,6 +398,133 @@ MonoBehaviour:
   maxMotionBlur: 100
   maxLensDistortion: 0.5
   lensDistortionScale: 1
+--- !u!1 &3504909186475033590
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 30976583376532468}
+  - component: {fileID: 8614561358586215005}
+  - component: {fileID: 1882544619011438648}
+  m_Layer: 9
+  m_Name: Flashlight
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &30976583376532468
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3504909186475033590}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.527, z: 0.5579999}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6425278350832061274}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+--- !u!108 &8614561358586215005
+Light:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3504909186475033590}
+  m_Enabled: 1
+  serializedVersion: 12
+  m_Type: 0
+  m_Color: {r: 1, g: 0.7734132, b: 0, a: 1}
+  m_Intensity: 1000
+  m_Range: 20
+  m_SpotAngle: 83.53271
+  m_InnerSpotAngle: 56.096474
+  m_CookieSize2D: {x: 0.5, y: 0.5}
+  m_Shadows:
+    m_Type: 2
+    m_Resolution: -1
+    m_CustomResolution: -1
+    m_Strength: 1
+    m_Bias: 0.05
+    m_NormalBias: 0.4
+    m_NearPlane: 0.2
+    m_CullingMatrixOverride:
+      e00: 1
+      e01: 0
+      e02: 0
+      e03: 0
+      e10: 0
+      e11: 1
+      e12: 0
+      e13: 0
+      e20: 0
+      e21: 0
+      e22: 1
+      e23: 0
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    m_UseCullingMatrixOverride: 0
+  m_Cookie: {fileID: 0}
+  m_DrawHalo: 0
+  m_Flare: {fileID: 0}
+  m_RenderMode: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingLayerMask: 1
+  m_Lightmapping: 4
+  m_LightShadowCasterMode: 0
+  m_AreaSize: {x: 1, y: 1}
+  m_BounceIntensity: 10
+  m_ColorTemperature: 6570
+  m_UseColorTemperature: 0
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_UseBoundingSphereOverride: 0
+  m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
+  m_ShadowRadius: 0
+  m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
+--- !u!114 &1882544619011438648
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3504909186475033590}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &8525378630689334571
 GameObject:
   m_ObjectHideFlags: 0
@@ -357,7 +534,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 463178522080104352}
-  m_Layer: 9
+  m_Layer: 6
   m_Name: Weapon Hold
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -65,9 +65,6 @@ namespace Player
             {
                 AudioManager.Instance.PlayPlayerAttack();
             }
-
-            // ... attack animation logic ...
-            _isAttacking = true;
             
             // 1. Take control
             playerPickup.preventRotationUpdate = true;
