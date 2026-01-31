@@ -123,6 +123,10 @@ public class ZombieNPCDetect : MonoBehaviour
         {
             if (hit.transform.CompareTag("Player"))
             {
+                if (!inRange) // First frame of detection
+                {
+                    AudioManager.Instance.PlayZombieGrowl();
+                }
                 inRange = true;
             }
             else

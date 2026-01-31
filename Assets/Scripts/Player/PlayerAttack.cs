@@ -29,7 +29,7 @@ namespace Player
             // Simple Left Click Check (Supports New Input System via Mouse.current or fallback)
             bool attackInput = false;
             
-            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            if ((Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame) || (Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame))
             {
                 attackInput = true;
             }

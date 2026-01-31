@@ -57,11 +57,12 @@ namespace UI
         private MotionBlur _motionBlur;
         private LensDistortion _lensDistortion;
 
-        [Header("Audio Settings")]
-        [Tooltip("Looping sound that gets louder as vignette darkens (Heartbeat/Drone)")]
-        [SerializeField] private AudioClip tensionClip;
-        [SerializeField] private float maxVolume = 1.0f;
-        private AudioSource _audioSource;
+        // [Header("Audio Settings")]
+        // Tension audio is now handled by AudioManager
+        // [Tooltip("Looping sound that gets louder as vignette darkens (Heartbeat/Drone)")]
+        // [SerializeField] private AudioClip tensionClip; // Deprecated
+        // [SerializeField] private float maxVolume = 1.0f; // Deprecated
+        // private AudioSource _audioSource; // Deprecated
 
         private void Start()
         {
@@ -90,20 +91,12 @@ namespace UI
                 SetupVolume();
             }
 
-            // Setup Audio
-            SetupAudio();
+            // Setup Audio - AudioManager handles it globally now
         }
 
         private void SetupAudio()
         {
-            if (tensionClip == null) return;
-
-            _audioSource = gameObject.AddComponent<AudioSource>();
-            _audioSource.clip = tensionClip;
-            _audioSource.loop = true;
-            _audioSource.volume = 0f;
-            _audioSource.playOnAwake = false;
-            _audioSource.Play(); // Start playing immediately but at 0 volume
+             // Deprecated local setup
         }
 
         private void SetupVolume()
@@ -120,12 +113,6 @@ namespace UI
             VolumeProfile profile = ScriptableObject.CreateInstance<VolumeProfile>();
             _volume.profile = profile;
             
-            // Debug.Log($"[VignetteEffect] Volume created on: {gameObject.name} | Layer: {LayerMask.LayerToName(gameObject.layer)}");
-            if (gameObject.layer == LayerMask.NameToLayer("UI"))
-            {
-                Debug.LogWarning("[VignetteEffect] WARNING: Script is on UI Layer! Camera Volume Mask might ignore this. Please move script to an empty GameObject on 'Default' layer or change this object's layer.");
-            }
-
             // Add Overrides
             profile.TryGet(out _chromaticAberration);
             if (_chromaticAberration == null)
@@ -153,12 +140,10 @@ namespace UI
             _lensDistortion.scale.overrideState = true;
             _lensDistortion.scale.value = 1f;
 
-
             // Important: Set priority or weight to ensure it shows
             _volume.weight = 1.0f;
             _volume.priority = 100; // High priority to override global volumes
         }
-
 
         private void Update()
         {
@@ -202,18 +187,20 @@ namespace UI
             if (isAnyEnemyInRange)
             {
                 _currentAlpha += darkenSpeed * Time.deltaTime;
+                 AudioManager.Instance.SetTensionState(true);
             }
             else
             {
                 _currentAlpha -= recoverySpeed * Time.deltaTime;
+                 AudioManager.Instance.SetTensionState(false);
             }
             _currentAlpha = Mathf.Clamp01(_currentAlpha);
 
-            // Update Audio Volume
-            if (_audioSource != null)
-            {
-                _audioSource.volume = _currentAlpha * maxVolume;
-            }
+            // Update Audio Volume - Deprecated local handling
+            // if (_audioSource != null)
+            // {
+            //    _audioSource.volume = _currentAlpha * maxVolume;
+            // }
 
             // --- Effects Update ---
             

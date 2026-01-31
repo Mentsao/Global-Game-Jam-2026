@@ -1,91 +1,137 @@
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance;
 
-    [System.Serializable]
-    public class Sound
-    {
-        public string name;
-        public AudioClip clip;
-        [Range(0f, 1f)] public float volume = 1f;
-        [Range(0.1f, 3f)] public float pitch = 1f;
-    }
+    [Header("BGM")]
+    [SerializeField] private AudioClip mainTheme;
+    [SerializeField] private AudioSource bgmSource;
 
-    [Header("Sound Registry")]
-    [SerializeField] private List<Sound> musicTracks = new List<Sound>();
-    [SerializeField] private List<Sound> sfxClips = new List<Sound>();
+    [Header("Player SFX")]
+    [SerializeField] private AudioClip stepWalk;
+    [SerializeField] private AudioClip stepRun;
+    [SerializeField] private AudioClip stepCrouch;
+    [SerializeField] private AudioClip attackSwing;
+    
+    [Header("Zombie SFX")]
+    [SerializeField] private AudioClip zombieGrowl;
 
-    [Header("Sources")]
-    [SerializeField] private AudioSource musicSource;
-    [SerializeField] private AudioSource sfxSource;
+    [Header("Police SFX")]
+    [SerializeField] private AudioClip policePass;
+    [SerializeField] private AudioClip policeFail;
+
+    [Header("Atmosphere")]
+    [SerializeField] private AudioClip tensionLoop;
+    [SerializeField] private float tensionFadeSpeed = 1.0f;
+    private AudioSource tensionSource;
+    private AudioSource sfxSource;
 
     private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // Keep across scenes
+            DontDestroyOnLoad(gameObject);
+            InitializeSources();
         }
         else
         {
             Destroy(gameObject);
-            return;
         }
-
-        // Auto-add sources if missing
-        if (musicSource == null) musicSource = gameObject.AddComponent<AudioSource>();
-        if (sfxSource == null) sfxSource = gameObject.AddComponent<AudioSource>();
-
-        musicSource.loop = true;
     }
 
-    // --- MUSIC ---
-    public void PlayMusic(string name)
+    private void InitializeSources()
     {
-        Sound s = musicTracks.Find(x => x.name == name);
-        if (s == null)
+        // BGM Source
+        if (bgmSource == null)
         {
-            Debug.LogWarning($"[AudioManager] Music '{name}' not found!");
-            return;
+            bgmSource = gameObject.AddComponent<AudioSource>();
+            bgmSource.loop = true;
+            bgmSource.playOnAwake = false;
         }
 
-        // Don't restart if already playing
-        if (musicSource.clip == s.clip && musicSource.isPlaying) return;
+        // SFX Source (General 2D)
+        sfxSource = gameObject.AddComponent<AudioSource>();
 
-        musicSource.clip = s.clip;
-        musicSource.volume = s.volume;
-        musicSource.pitch = s.pitch;
-        musicSource.Play();
-    }
-
-    public void StopMusic()
-    {
-        musicSource.Stop();
-    }
-
-    // --- SFX ---
-    public void PlaySFX(string name)
-    {
-        Sound s = sfxClips.Find(x => x.name == name);
-        if (s == null)
+        // Tension Source
+        tensionSource = gameObject.AddComponent<AudioSource>();
+        tensionSource.loop = true;
+        tensionSource.volume = 0f;
+        if (tensionLoop != null)
         {
-            Debug.LogWarning($"[AudioManager] SFX '{name}' not found!");
-            return;
+            tensionSource.clip = tensionLoop;
+            tensionSource.Play(); // Play silent, fade vol later
         }
 
-        sfxSource.PlayOneShot(s.clip, s.volume);
+        // Play Main Theme if set
+        if (mainTheme != null)
+        {
+            bgmSource.clip = mainTheme;
+            bgmSource.volume = 0.5f;
+            bgmSource.Play();
+        }
     }
 
-    // Optional: Play Sound at location (3D)
-    public void PlaySFXAtPosition(string name, Vector3 position)
+    // --- PLAYER ---
+    public void PlayFootstep(bool isRunning, bool isCrouching)
     {
-        Sound s = sfxClips.Find(x => x.name == name);
-        if (s == null) return;
+        AudioClip clip = stepWalk;
+        float vol = 0.5f;
 
-        AudioSource.PlayClipAtPoint(s.clip, position, s.volume);
+        if (isCrouching)
+        {
+            clip = stepCrouch;
+            vol = 0.3f;
+        }
+        else if (isRunning)
+        {
+            clip = stepRun;
+            vol = 0.7f;
+        }
+
+        if (clip != null) sfxSource.PlayOneShot(clip, vol);
+    }
+
+    public void PlayPlayerAttack()
+    {
+        if (attackSwing != null) sfxSource.PlayOneShot(attackSwing, 0.8f);
+    }
+
+    // --- ZOMBIE ---
+    public void PlayZombieGrowl()
+    {
+        if (zombieGrowl != null) sfxSource.PlayOneShot(zombieGrowl, 1.0f);
+    }
+
+    // --- POLICE ---
+    public void PlayPoliceDecision(bool approved)
+    {
+        AudioClip clip = approved ? policePass : policeFail;
+        if (clip != null) sfxSource.PlayOneShot(clip, 1.0f);
+    }
+
+    // --- ATMOSPHERE ---
+    private Coroutine tensionCoroutine;
+
+    public void SetTensionState(bool active)
+    {
+        if (tensionLoop == null) return;
+        
+        float targetVol = active ? 0.8f : 0.0f;
+        if (tensionCoroutine != null) StopCoroutine(tensionCoroutine);
+        tensionCoroutine = StartCoroutine(FadeTension(targetVol));
+    }
+
+    private IEnumerator FadeTension(float targetVol)
+    {
+        while (Mathf.Abs(tensionSource.volume - targetVol) > 0.01f)
+        {
+            tensionSource.volume = Mathf.MoveTowards(tensionSource.volume, targetVol, Time.deltaTime * tensionFadeSpeed);
+            yield return null;
+        }
+        tensionSource.volume = targetVol;
     }
 }

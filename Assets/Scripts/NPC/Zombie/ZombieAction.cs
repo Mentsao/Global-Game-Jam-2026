@@ -23,13 +23,23 @@ public class ZombieActions : MonoBehaviour
     [SerializeField] private GameObject canvas;
     [SerializeField] private Slider slider;
 
-    [Header("Scripts")]
+    [Header("Movement Settings")]
+    [SerializeField] private float walkSpeed = 2f;
+    [SerializeField] private float runSpeed = 6f;
+    [SerializeField] private float patrolRadius = 10f;
+    [SerializeField] private float patrolWaitTime = 3f;
+    private float _patrolTimer;
+
     private ZombieNPCDetect zombieNPCDetect;
+    private Animator _animator;
+    private string _currentAnimState = "";
 
     private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         zombieNPCDetect = GetComponent<ZombieNPCDetect>();
+        _animator = GetComponentInChildren<Animator>();
+
         // Check if canvas is assigned to avoid null ref if user forgot, but it's SerializedField so should be fine if set in inspector
         if (canvas != null) canvas.SetActive(false);
         
@@ -45,38 +55,49 @@ public class ZombieActions : MonoBehaviour
 
     private void Update()
     {
+        UpdateAnimations();
+
         // Handle Cooldown
         if (currentCooldown > 0)
         {
             currentCooldown -= Time.deltaTime;
         }
 
-        if (zombieNPCDetect.target == null)
+        // QTE Logic (High Priority)
+        if (canvas.activeSelf)
         {
-            QTETimeLeft = QTETimeLimit;
-            return;
-        }
-            
-        // Always try to move to target unless QTE is active (canvas active)
-        if (!canvas.activeSelf)
-        {
-            agent.isStopped = false;
-            MoveToTarget();
-            
-            // Check for Physical Attack Trigger if not in cooldown
-            if (currentCooldown <= 0)
-            {
-                TryAttackPlayer();
-            }
-        }
-        else
-        {
-            // QTE is running, stop moving
+             // QTE is running, stop moving
             agent.isStopped = true;
             QTEAttack();
             QTETimeLeft -= Time.deltaTime;
+            return; // Skip other movement logic
         }
-        
+
+        // Behavior Logic
+        if (zombieNPCDetect.target != null)
+        {
+             // CHASE
+             QTETimeLeft = QTETimeLimit;
+             
+             // Run Speed
+             agent.speed = runSpeed;
+             agent.isStopped = false;
+
+             MoveToTarget();
+
+             // Check for Attack
+             if (currentCooldown <= 0)
+             {
+                 TryAttackPlayer();
+             }
+        }
+        else
+        {
+             // PATROL
+             agent.speed = walkSpeed; // Walk Speed
+             PatrolBehavior();
+        }
+
         // Legacy destinationReached logic checks
         if (agent.hasPath && !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
         {
@@ -85,6 +106,72 @@ public class ZombieActions : MonoBehaviour
         else
         {
             destinationReached = false;
+        }
+    }
+
+    private void PatrolBehavior()
+    {
+        if (!agent.pathPending && agent.remainingDistance < 0.5f)
+        {
+            _patrolTimer += Time.deltaTime;
+            if (_patrolTimer >= patrolWaitTime)
+            {
+                SetRandomDestination();
+                _patrolTimer = 0f;
+            }
+        }
+    }
+
+    private void SetRandomDestination()
+    {
+        Vector3 randomDirection = Random.insideUnitSphere * patrolRadius;
+        randomDirection += transform.position;
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(randomDirection, out hit, patrolRadius, NavMesh.AllAreas))
+        {
+            agent.SetDestination(hit.position);
+        }
+    }
+
+    [SerializeField] private float animTransitionTime = 0.25f;
+
+    private void UpdateAnimations()
+    {
+        if (_animator == null) return;
+        
+        string newState = "ZombieIdle";
+
+        // Priority 1: Attacking (QTE)
+        if (canvas.activeSelf)
+        {
+            newState = "ZombieAttack";
+        }
+        else
+        {
+            // Priority 2: Movement
+            float speed = agent.velocity.magnitude;
+            if (speed > 0.1f)
+            {
+                if (speed > 3.5f) // Tuning threshold
+                {
+                    newState = "ZombieRunning";
+                }
+                else
+                {
+                    newState = "ZombieWalking";
+                }
+            }
+            else
+            {
+                newState = "ZombieIdle";
+            }
+        }
+
+        if (_currentAnimState != newState)
+        {
+            // CrossFade blends the new animation over 'animTransitionTime' seconds
+            _animator.CrossFade(newState, animTransitionTime);
+            _currentAnimState = newState;
         }
     }
 

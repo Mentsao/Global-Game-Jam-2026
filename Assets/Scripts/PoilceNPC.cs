@@ -248,12 +248,14 @@ public class PoliceNPC : MonoBehaviour
                         // Success!
                         Debug.Log("Police: Document Verified! Switching to Patrol.");
                         pickup.ConsumeHeldItem();
+                        AudioManager.Instance.PlayPoliceDecision(true);
                         currentState = PoliceState.Patrolling; 
                         agent.ResetPath(); // Stop chasing immediately
                     }
                     else
                     {
                         Debug.Log("Police: Wrong Item! (Need 'Document' tag)");
+                        AudioManager.Instance.PlayPoliceDecision(false);
                     }
                 }
                 else

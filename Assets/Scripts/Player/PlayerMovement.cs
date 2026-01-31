@@ -32,6 +32,7 @@ namespace Player
         private Vector2 _lookInput;
         private float _xRotation = 0f;
         private Vector3 _velocity;
+        private float _stepTimer = 0f;
 
         private void Awake()
         {
@@ -142,9 +143,7 @@ namespace Player
             // User requested: "lower the camera". Ok.
             
             // Re-calc specific camera height targets
-            float standCamY = 0.6f; // Default relevant to pivot? or just current?
-            // Actually, let's assume the current camera Y is the 'Standing' Y.
-            // It's risky to assume. Let's just lerp the camera's local Y.
+            // float standCamY = 0.6f; // Unused
             
             // We'll define specific camera offsets based on standard Unity Capsule (2m tall)
             // Stand Eye: 1.6m (or 0.6m local if pivot is center?)
@@ -163,7 +162,28 @@ namespace Player
 
             // Move
             Vector3 move = transform.right * _moveInput.x + transform.forward * _moveInput.y;
+            bool isMoving = move.sqrMagnitude > 0;
             _characterController.Move(move * currentSpeed * Time.deltaTime);
+
+            // Footsteps Logic
+            if (isMoving && isGrounded)
+            {
+                _stepTimer -= Time.deltaTime;
+                if (_stepTimer <= 0f)
+                {
+                     bool isRunning = (currentSpeed == sprintSpeed);
+                     AudioManager.Instance.PlayFootstep(isRunning, isCrouching);
+                     
+                     // Reset timer based on speed (simulated stride)
+                     float strideDuration = isRunning ? 0.35f : (isCrouching ? 0.6f : 0.5f);
+                     _stepTimer = strideDuration;
+                }
+            }
+            else
+            {
+                 // Reset timer so next step is immediate when starting to move
+                 _stepTimer = 0f;
+            }
 
             // Gravity
             _velocity.y += gravity * Time.deltaTime;
