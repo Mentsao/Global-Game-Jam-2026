@@ -9,6 +9,7 @@ public class Tutorial : MonoBehaviour
     [Header("Papers Tutorial")]
     [SerializeField] private TextMeshProUGUI dialogueText;
 
+
     [Header("Pick Up Knife Tutorial")]
     public bool startFade = false;
     [SerializeField] private GameObject pickUpKnifeTutorial;
@@ -79,8 +80,9 @@ public class Tutorial : MonoBehaviour
     {
         if (PlayerDeath.documentCount <= 0 && PlayerDeath.deathCount > 0)
         {
-            dialogueText.gameObject.SetActive(true);
             dialogueText.text = "I feel like I'm missing something...";
+            Animator dialogueAnim = dialogueText.GetComponent<Animator>();
+            dialogueAnim.SetTrigger("DialogueTrigger");
         }
     }
 
