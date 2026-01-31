@@ -25,6 +25,8 @@ namespace Player
 
         public Transform HeldItem => _heldItem;
 
+        public bool isWeapon = false;       
+
         private void Awake()
         {
             _inputActions = new InputSystem_Actions();
@@ -163,7 +165,7 @@ namespace Player
 
                 // 2. Determine Slot Type
                 bool isDocument = lowerName.Contains("document");
-                bool isWeapon = lowerName.Contains("balisong") || lowerName.Contains("knife") || lowerName.Contains("weapon");
+                isWeapon = lowerName.Contains("balisong") || lowerName.Contains("knife") || lowerName.Contains("weapon");
 
                 if (isDocument)
                 {

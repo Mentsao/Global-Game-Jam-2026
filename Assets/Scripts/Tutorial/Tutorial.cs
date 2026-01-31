@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using Player;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -9,7 +10,6 @@ public class Tutorial : MonoBehaviour
     [SerializeField] private GameObject papersTutorial;
 
     [Header("Pick Up Knife Tutorial")]
-    [SerializeField] private bool hasKnife = false;
     public bool startFade = false;
     [SerializeField] private GameObject pickUpKnifeTutorial;
     [SerializeField] private GameObject bigPickUpKnifeText;
@@ -20,16 +20,21 @@ public class Tutorial : MonoBehaviour
     [SerializeField] private GameObject knife;
 
 
+    [Header("Scripts")]
+    public PlayerPickup playerPickup;
+
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        playerPickup = player.GetComponent<PlayerPickup>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!hasKnife && startFade)
+        if (!playerPickup.isWeapon && startFade)
         {
             pickUpKnifeTutorial.SetActive(true);
             animTime -= Time.deltaTime;
@@ -38,7 +43,13 @@ public class Tutorial : MonoBehaviour
             if(bigPickUpKnifeText.activeSelf) 
             {
                 GameObject player = GameObject.FindGameObjectWithTag("Player");
-                player.transform.LookAt(knife.transform);
+
+                float dist = Vector3.Distance(player.transform.position, knife.transform.position);
+
+                if (dist > 5f)
+                {
+                    player.transform.LookAt(knife.transform);
+                }
                 return;
             }
 
@@ -53,7 +64,7 @@ public class Tutorial : MonoBehaviour
                 bigPickUpKnifeText.SetActive(true);
             }
         }
-        else if (hasKnife)
+        else if (playerPickup.isWeapon)
         {
             pickUpKnifeTutorial.SetActive(false);
         }
