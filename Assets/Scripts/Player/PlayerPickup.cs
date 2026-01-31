@@ -12,6 +12,11 @@ namespace Player
         [SerializeField] private LayerMask pickupLayer = ~0; // Default to Everything
         [SerializeField] private System.Collections.Generic.List<string> itemTags = new System.Collections.Generic.List<string> { "Item", "Document" };
 
+        [Header("Audio")]
+        [SerializeField] private AudioSource audioSource;
+        [SerializeField] private AudioClip balisongPickupSFX;
+        [SerializeField] private AudioClip documentPickupSFX;
+
         private InputSystem_Actions _inputActions;
         private Transform _heldItem; // Currently active item
         
@@ -29,6 +34,8 @@ namespace Player
         {
             _inputActions = new InputSystem_Actions();
             _cameraTransform = Camera.main.transform;
+            if (audioSource == null) audioSource = GetComponent<AudioSource>();
+            if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
         }
 
         private void OnEnable()
@@ -269,6 +276,17 @@ namespace Player
             item.SetParent(holdPosition);
             item.localPosition = Vector3.zero;
             UpdateHeldItemRotation();
+
+            // Play Pickup SFX if it's the Balisong
+            string lowerName = _heldItem.name.ToLower();
+            if (lowerName.Contains("balisong") && balisongPickupSFX != null)
+            {
+                audioSource.PlayOneShot(balisongPickupSFX);
+            }
+            else if (lowerName.Contains("document") && documentPickupSFX != null)
+            {
+                audioSource.PlayOneShot(documentPickupSFX);
+            }
         }
 
         private void OnDrawGizmosSelected()

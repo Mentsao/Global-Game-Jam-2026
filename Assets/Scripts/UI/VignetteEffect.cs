@@ -44,6 +44,11 @@ namespace UI
         [Tooltip("Scale multiplier to prevent black edges during distortion (usually 0.8 - 1.2)")]
         [SerializeField] private float lensDistortionScale = 1.0f;
 
+        [Header("Audio")]
+        [SerializeField] private AudioSource audioSource;
+        [SerializeField] private AudioClip vignetteSFX;
+        [SerializeField] private float maxVolume = 1.0f;
+
 
         private Transform _playerTransform;
         private float _currentAlpha = 0f;
@@ -82,6 +87,17 @@ namespace UI
             if (enableBlur)
             {
                 SetupVolume();
+            }
+
+            // Setup Audio
+            if (audioSource == null) audioSource = GetComponent<AudioSource>();
+            if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+            
+            if (vignetteSFX != null)
+            {
+                audioSource.clip = vignetteSFX;
+                audioSource.loop = true;
+                audioSource.volume = 0f;
             }
         }
 
@@ -236,6 +252,20 @@ namespace UI
                     _lensDistortion.intensity.value = effectRatio * maxLensDistortion;
                     // Interpolate scale to prevent black borders if using pinch
                     _lensDistortion.scale.value = Mathf.Lerp(1f, lensDistortionScale, effectRatio);
+                }
+            }
+
+            // 3. Audio Update
+            if (audioSource != null && vignetteSFX != null)
+            {
+                if (_currentAlpha > 0.01f)
+                {
+                    if (!audioSource.isPlaying) audioSource.Play();
+                    audioSource.volume = _currentAlpha * maxVolume;
+                }
+                else
+                {
+                    if (audioSource.isPlaying) audioSource.Stop();
                 }
             }
         }
