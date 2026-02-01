@@ -228,14 +228,30 @@ namespace Player
             
             if (previousItem != null)
             {
-                // If we are currently holding the item we are about to replace, drop it
-                if (_heldItem == previousItem)
+                // SPECIAL FOR MASKS: If replacing a mask, destroy it instead of dropping it
+                bool isMaskSlot = (slotIndex == 3 || slotIndex == 4);
+                
+                if (isMaskSlot)
+                {
+                    Debug.Log($"[Pickup] Inventory full. Destroying old mask: {previousItem.name}");
+                    if (_heldItem == previousItem)
+                    {
+                        // Clean up state if it was equipped
+                        _heldItem = null;
+                        _isMaskEquipped = false;
+                        _isAnimatingMask = false;
+                        CurrentMaskType = Items.Masks.MaskType.None;
+                        if (UI.MaskDurabilityUI.Instance != null) UI.MaskDurabilityUI.Instance.SetVisible(false);
+                    }
+                    Destroy(previousItem.gameObject);
+                }
+                else if (_heldItem == previousItem)
                 {
                    DropItem(); 
                 }
                 else
                 {
-                    // Eject from pocket
+                    // Eject from pocket (for weapons/docs)
                     previousItem.SetParent(null);
                     previousItem.gameObject.SetActive(true);
                     
@@ -245,6 +261,14 @@ namespace Player
                     Collider col = previousItem.GetComponent<Collider>();
                     if (col != null) col.enabled = true;
                 }
+            }
+
+            // DURABILITY REFRESH: If this is a mask, reset its durability
+            Items.Masks.MaskItem mask = item.GetComponent<Items.Masks.MaskItem>();
+            if (mask != null)
+            {
+                mask.currentDurability = mask.MaxDurability;
+                Debug.Log($"[Mask] Durability Refreshed for {item.name}");
             }
 
             // 2. Assign logic
@@ -276,6 +300,12 @@ namespace Player
             _isAnimatingMask = false;
             CurrentMaskType = Items.Masks.MaskType.None; // Reset Mask Type on switch
 
+            // Hide Durability UI on switch
+            if (UI.MaskDurabilityUI.Instance != null)
+            {
+                UI.MaskDurabilityUI.Instance.SetVisible(false);
+            }
+
             // Determine new item
             Transform newItem = GetItemInSlot(slotIndex);
 
@@ -298,6 +328,65 @@ namespace Player
             UpdateHeldItemRotation();
             HandleInput();
             HandleMaskInput();
+            HandleMaskDurability();
+        }
+
+        private void HandleMaskDurability()
+        {
+            if (_isMaskEquipped && _heldItem != null)
+            {
+                Items.Masks.MaskItem mask = _heldItem.GetComponent<Items.Masks.MaskItem>();
+                if (mask != null)
+                {
+                    // Deduct durability (e.g., 2 units per second)
+                    mask.currentDurability -= 2f * Time.deltaTime;
+
+                    // Update UI
+                    if (UI.MaskDurabilityUI.Instance != null)
+                    {
+                        UI.MaskDurabilityUI.Instance.UpdateDurability(mask.currentDurability, mask.MaxDurability);
+                    }
+
+                    // Break Mask if durability runs out
+                    if (mask.currentDurability <= 0)
+                    {
+                        BreakMask();
+                    }
+                }
+            }
+        }
+
+        private void BreakMask()
+        {
+            Debug.Log("[Mask] BREAK! Durability depleted.");
+            
+            if (UI.MaskDurabilityUI.Instance != null)
+                UI.MaskDurabilityUI.Instance.SetVisible(false);
+
+            // Destroy the object
+            if (_heldItem != null)
+            {
+                // Remove from Slot Reference
+                if (_heldItem == _weaponSlot) _weaponSlot = null;
+                if (_heldItem == _documentSlot) _documentSlot = null;
+                if (_heldItem == _maskSlot1) _maskSlot1 = null;
+                if (_heldItem == _maskSlot2) _maskSlot2 = null;
+
+                Destroy(_heldItem.gameObject);
+            }
+
+            // Reset States
+            _heldItem = null;
+            _isMaskEquipped = false;
+            _isAnimatingMask = false;
+            CurrentMaskType = Items.Masks.MaskType.None;
+
+            if (AudioManager.Instance != null)
+            {
+                // Play a generic "glass break" or "rip" sound if available, 
+                // for now maybe just reuse impact?
+                AudioManager.Instance.PlayImpact();
+            }
         }
 
         private void HandleMaskInput()
@@ -362,6 +451,23 @@ namespace Player
                 {
                     CurrentMaskType = maskItem.Type;
                     Debug.Log($"[Mask] Equipped: {CurrentMaskType}");
+
+                    // Show Durability UI
+                    if (UI.MaskDurabilityUI.Instance != null)
+                    {
+                        UI.MaskDurabilityUI.Instance.SetVisible(true);
+                        UI.MaskDurabilityUI.Instance.UpdateDurability(maskItem.currentDurability, maskItem.MaxDurability);
+                    }
+
+                    // Check for Government Mask Effect: Remove Scorched Earth
+                    if (CurrentMaskType == Items.Masks.MaskType.Government)
+                    {
+                        if (ScorchedEarthManager.Instance != null && ScorchedEarthManager.Instance.IsActive)
+                        {
+                            Debug.Log("[Mask] Government Mask Equipped: DISABLING SCORCHED EARTH.");
+                            ScorchedEarthManager.Instance.StopScorchedEarth();
+                        }
+                    }
                 }
             }
             else if (!equip)
@@ -369,6 +475,12 @@ namespace Player
                 // Unequipped
                 CurrentMaskType = Items.Masks.MaskType.None;
                 Debug.Log("[Mask] Unequipped");
+
+                // Hide Durability UI
+                if (UI.MaskDurabilityUI.Instance != null)
+                {
+                    UI.MaskDurabilityUI.Instance.SetVisible(false);
+                }
             }
         }
 

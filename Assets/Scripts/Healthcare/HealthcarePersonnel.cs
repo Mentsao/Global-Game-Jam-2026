@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 [RequireComponent(typeof(CharacterController))] // Optional, just ensuring basic movability
 public class HealthcarePersonnel : MonoBehaviour
@@ -19,11 +20,14 @@ public class HealthcarePersonnel : MonoBehaviour
 
     // State
     private bool _isFollowing = false;
+    private bool _isEnraged = false; // For Scorched Earth
     private Transform _playerTransform;
     private Vector3 _homePosition;
     
     // Animation
     private Animator _animator;
+    private NavMeshAgent _agent; // Added for Scorched Earth control
+
     [Header("Animation Settings")]
     [SerializeField] private float animTransitionTime = 0.2f;
     private string _currentAnimState;
@@ -33,6 +37,7 @@ public class HealthcarePersonnel : MonoBehaviour
 
     void Start()
     {
+        _agent = GetComponent<NavMeshAgent>();
         _animator = GetComponentInChildren<Animator>();
 
         // Physics Fix: Prevent tipping over
@@ -58,17 +63,50 @@ public class HealthcarePersonnel : MonoBehaviour
         // 0. Scorched Earth Check
         if (ScorchedEarthManager.Instance != null && ScorchedEarthManager.Instance.IsActive)
         {
-            if (_isFollowing)
+            if (!_isEnraged)
             {
-                // Betray player immediately
-                StopFollowing();
+                _isEnraged = true;
+                if (_agent != null)
+                {
+                    _agent.speed = moveSpeed * 1.5f; // SPRINT
+                    _agent.stoppingDistance = 0.5f; // Tighten
+                    _agent.autoBraking = false;
+                    _agent.acceleration = 20f;
+                }
+                Debug.Log($"[Healthcare] {name} ENRAGED! Bypassing all zones.");
             }
+
+            if (_isFollowing) StopFollowing();
+            _isPatrolling = false;
+
             HostileBehavior();
             UpdateAnimationState();
             return; // Skip normal behavior
         }
+        else if (_isEnraged)
+        {
+            // Reset if scorched earth ends
+            _isEnraged = false;
+            if (_agent != null)
+            {
+                _agent.speed = moveSpeed;
+                _agent.stoppingDistance = stopDistance;
+                _agent.autoBraking = true;
+            }
+        }
 
         // 1. Detection Logic (Trigger Box)
+        // Dynamic Mask Check: If following but player is now masked, stop.
+        if (_isFollowing && _playerTransform != null)
+        {
+            Player.PlayerPickup pickup = _playerTransform.GetComponent<Player.PlayerPickup>();
+            if (pickup != null && pickup.CurrentMaskType == Items.Masks.MaskType.Nurse)
+            {
+                Debug.Log("[Healthcare] Player donned mask while followed. Stopping.");
+                StopFollowing();
+            }
+        }
+
         DetectPlayer();
 
         // 2. Follow or Patrol
@@ -98,12 +136,16 @@ public class HealthcarePersonnel : MonoBehaviour
         {
             if (hit.CompareTag("Player"))
             {
-                // Check for Nurse Mask
+                // Check for Nurse Mask or Government Mask (Immunity)
                 Player.PlayerPickup pickup = hit.GetComponent<Player.PlayerPickup>();
-                if (pickup != null && pickup.CurrentMaskType == Items.Masks.MaskType.Nurse)
+                if (pickup != null)
                 {
-                    // Ignore disguised player
-                    continue; 
+                    if (pickup.CurrentMaskType == Items.Masks.MaskType.Nurse || 
+                        pickup.CurrentMaskType == Items.Masks.MaskType.Government)
+                    {
+                        // Ignore disguised player
+                        continue; 
+                    }
                 }
 
                 playerInTrigger = true;
@@ -131,7 +173,8 @@ public class HealthcarePersonnel : MonoBehaviour
                     // Attack Animation
                     if (!_isAttacking)
                     {
-                        StartCoroutine(PlayAttackAnimation());
+                        if (_animator != null) _animator.Play("HealthcareAttack");
+                        StartCoroutine(AttackCooldownRoutine());
                     }
                     
                     // Deal 1 damage
@@ -160,12 +203,12 @@ public class HealthcarePersonnel : MonoBehaviour
     [SerializeField] private float attackCooldown = 2.0f;
     private bool _isAttacking = false;
 
-    private System.Collections.IEnumerator PlayAttackAnimation()
+    private System.Collections.IEnumerator AttackCooldownRoutine()
     {
         _isAttacking = true;
-        PlayAnimation(ANIM_ATTACK);
+        // Animation is triggered directly via Play() in caller
         
-        // Wait for animation duration (approx 1s or configurable)
+        // Wait for animation duration (approx 1s)
         yield return new WaitForSeconds(1.0f);
         
         _isAttacking = false;
@@ -181,20 +224,30 @@ public class HealthcarePersonnel : MonoBehaviour
         // Determine Move State
         bool isMoving = false;
         
-        // Check actual movement distance per frame or intent
-        // Simple way: check velocity if using NavMesh, or manual check
-        // Since we translate manually:
-        // For Follow:
-        if (_isFollowing && _playerTransform != null)
+        // 1. Check Agent first (Scorched Earth / Pathing)
+        if (_agent != null && _agent.enabled && _agent.hasPath && _agent.velocity.magnitude > 0.1f)
         {
-             float dist = Vector3.Distance(transform.position, _playerTransform.position);
-             if (dist > stopDistance) isMoving = true;
+            isMoving = true;
         }
-        // For Patrol:
-        else if (_isPatrolling)
+        else
         {
-            float dist = Vector3.Distance(transform.position, _currentPatrolPoint);
-            if (dist > 0.5f) isMoving = true;
+            // 2. Fallback for manual translation (Standard Follow/Patrol)
+            if (_isFollowing && _playerTransform != null)
+            {
+                 float dist = Vector3.Distance(transform.position, _playerTransform.position);
+                 if (dist > stopDistance) isMoving = true;
+            }
+            else if (_isPatrolling)
+            {
+                float dist = Vector3.Distance(transform.position, _currentPatrolPoint);
+                if (dist > 0.5f) isMoving = true;
+            }
+            else if (ScorchedEarthManager.Instance != null && ScorchedEarthManager.Instance.IsActive && _playerTransform != null)
+            {
+                // Hostile manual fallback
+                float dist = Vector3.Distance(transform.position, _playerTransform.position);
+                if (dist > stopDistance) isMoving = true;
+            }
         }
 
         string desiredState = isMoving ? ANIM_WALK : ANIM_IDLE;
@@ -269,29 +322,53 @@ public class HealthcarePersonnel : MonoBehaviour
         {
              GameObject p = GameObject.FindGameObjectWithTag("Player");
              if (p != null) _playerTransform = p.transform;
-             else return;
         }
+        
+        if (_playerTransform == null) return; // No player found in level
 
-        float dist = Vector3.Distance(transform.position, _playerTransform.position);
-
-        if (dist <= stopDistance)
+        // Determine detection center (matches Green Sphere Gizmo)
+        Vector3 detectCenter = transform.TransformPoint(detectionOffset);
+        float distToZone = Vector3.Distance(detectCenter, _playerTransform.position);
+        float distToPivot = Vector3.Distance(transform.position, _playerTransform.position);
+        
+        // Movement logic
+        if (distToPivot > stopDistance)
         {
-            // In Attack Range
-            if (Time.time >= _lastAttackTime + attackCooldown)
-            {
-                _lastAttackTime = Time.time;
-                StartCoroutine(PlayAttackAnimation());
-                
-                var hp = _playerTransform.GetComponent<Player.PlayerHealth>();
-                if (hp != null) hp.TakeDamage(1);
-            }
+            // Chase Player manually (relentless, bypasses NavMesh freezing)
+            Vector3 direction = (_playerTransform.position - transform.position).normalized;
+            float currentSpeed = _isEnraged ? moveSpeed * 1.5f : moveSpeed;
+            
+            transform.position += direction * currentSpeed * Time.deltaTime;
+            transform.LookAt(new Vector3(_playerTransform.position.x, transform.position.y, _playerTransform.position.z));
+            
+            if (_agent != null && _agent.enabled) _agent.isStopped = true; // Stay stopped while manual move takes over
         }
         else
         {
-            // Chase
-            Vector3 direction = (_playerTransform.position - transform.position).normalized;
-            transform.position += direction * (moveSpeed * 1.5f) * Time.deltaTime; // Faster chase
-            transform.LookAt(new Vector3(_playerTransform.position.x, transform.position.y, _playerTransform.position.z));
+             if (_agent != null && _agent.enabled) _agent.isStopped = true;
+        }
+
+        // ATTACK CONDITION: Inside Detection Radius OR very close to pivot
+        bool inDetectionZone = distToZone <= detectionRadius;
+        bool tooCloseToPivot = distToPivot <= stopDistance;
+
+        if ((inDetectionZone || tooCloseToPivot) && Time.time >= _lastAttackTime + attackCooldown)
+        {
+            _lastAttackTime = Time.time;
+            
+            // User Request: "call this animation... no need for transitions"
+            if (_animator != null) 
+            {
+                _animator.Play("HealthcareAttack", 0, 0f); // Force play state
+                _currentAnimState = ""; // Force animation refresh afterwards
+            }
+            
+            StartCoroutine(AttackCooldownRoutine()); 
+
+            Debug.Log($"[Healthcare] SCORCHED EARTH ATTACK! InZone: {inDetectionZone} | PivotDist: {distToPivot:F2}"); 
+            
+            var hp = _playerTransform.GetComponent<Player.PlayerHealth>();
+            if (hp != null) hp.TakeDamage(1);
         }
     }
 
@@ -350,7 +427,8 @@ public class HealthcarePersonnel : MonoBehaviour
              var hp = _playerTransform.GetComponent<Player.PlayerHealth>();
              if (hp != null) hp.RevokeBonusHealth(1);
         }
-
+        // Instant Hide
+        gameObject.SetActive(false);
         Destroy(gameObject);
     }
 

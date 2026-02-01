@@ -5,18 +5,19 @@ using UnityEngine.InputSystem; // Added for New Input System
 
 public class ZombieActions : MonoBehaviour
 {
+
     [Header("Zombie")]
     private NavMeshAgent agent;
     [SerializeField] private bool destinationReached = false;
-    [SerializeField] private float QTETimeLimit = 10f; // Increased to 10s
-    [SerializeField] private float QTETimeLeft = 10f;
+    [SerializeField] private float QTETimeLimit = 5f; // Reference value
+    [SerializeField] private float QTETimeLeft = 5f;
     [SerializeField] private float attackCooldown = 6f;
     private float currentCooldown = 0f;
     [SerializeField] private float blowBackDist = 7f;
     
     [Header("Attack Settings")]
     [SerializeField] private float attackRadius = 1.0f;
-    [SerializeField] private float attackOffset = 1.0f;
+    [SerializeField] private float attackOffset = 0.5f;
     [SerializeField] private LayerMask attackLayer;
 
     [Header("Canvas")]
@@ -30,9 +31,13 @@ public class ZombieActions : MonoBehaviour
     [SerializeField] private float patrolWaitTime = 3f;
     private float _patrolTimer;
 
+
+
     private ZombieNPCDetect zombieNPCDetect;
     private Animator _animator;
     private string _currentAnimState = "";
+    private GameObject _qteTarget; // Cached target for QTE
+    private int _tapCount = 0; // New discrete counter for stable QTE
 
     private void Start()
     {
@@ -40,8 +45,20 @@ public class ZombieActions : MonoBehaviour
         zombieNPCDetect = GetComponent<ZombieNPCDetect>();
         _animator = GetComponentInChildren<Animator>();
 
-        // Check if canvas is assigned to avoid null ref if user forgot, but it's SerializedField so should be fine if set in inspector
-        if (canvas != null) canvas.SetActive(false);
+        // Check if canvas is assigned
+        if (canvas != null)
+        {
+            // If the canvas is a Prefab Asset (not in the scene), instantiate it
+            if (!canvas.scene.IsValid())
+            {
+                GameObject canvasInstance = Instantiate(canvas, transform);
+                canvas = canvasInstance;
+                // Update slider reference from the new instance
+                slider = canvas.GetComponentInChildren<Slider>();
+            }
+            
+            canvas.SetActive(false);
+        }
         
         // Default attack layer to 'Default' or 'Player' if not set, to avoid failing silently
         if (attackLayer == 0) attackLayer = LayerMask.GetMask("Default", "Player", "Ignore Raycast"); 
@@ -64,11 +81,11 @@ public class ZombieActions : MonoBehaviour
         }
 
         // QTE Logic (High Priority)
-        if (canvas.activeSelf)
+        if (canvas != null && canvas.activeSelf)
         {
              // QTE is running, stop moving
-            agent.isStopped = true;
-            QTEAttack();
+            if (agent != null) agent.isStopped = true;
+            QTEAttack(_qteTarget); 
             QTETimeLeft -= Time.deltaTime;
             return; // Skip other movement logic
         }
@@ -184,8 +201,8 @@ public class ZombieActions : MonoBehaviour
         {
             if (hit.CompareTag("Player"))
             {
-                Debug.Log("Zombie Grabbed Player!"); 
-                QTEAttack();
+                Debug.Log($"[Zombie] Grabbed: {hit.name}!"); 
+                QTEAttack(hit.gameObject); // Passing the player object explicitly
                 return; // Start attack immediately
             }
         }
@@ -199,39 +216,89 @@ public class ZombieActions : MonoBehaviour
         }
     }
 
-    public void QTEAttack()
+    public void QTEAttack(GameObject playerObj = null)
     {
-        // Initialize QTE if it hasn't started yet (Canvas check is a simple way to know)
-        if (!canvas.activeSelf)
+        // 1. Initialize QTE if it hasn't started yet
+        if (canvas != null && !canvas.activeSelf)
         {
-            if (zombieNPCDetect.target.CompareTag("Player"))
+            if (playerObj != null && playerObj.CompareTag("Player"))
             {
-                canvas.SetActive(true);
-                slider.value = 0.35f; // Start with some progress
-                
-                // Disable Player Controls
-                var playerMovement = zombieNPCDetect.target.GetComponent<Player.PlayerMovement>();
+                // Check if player is already grappled by another zombie
+                var playerMovement = playerObj.GetComponent<Player.PlayerMovement>();
                 if (playerMovement != null)
                 {
+                    if (playerMovement.IsGrappled) return; // Already busy
+                    
+                    playerMovement.IsGrappled = true;
                     playerMovement.SetControlActive(false);
                 }
+
+                Debug.Log("[Zombie] Initializing QTE UI");
+                _qteTarget = playerObj; // Cache it!
+                Debug.Log("[Zombie] Initializing QTE UI");
+                
+                // Ensure TimeLimit is sane (inspector could be 0)
+                if (QTETimeLimit < 1f) QTETimeLimit = 5f;
+                QTETimeLeft = QTETimeLimit; // Explicitly reset timer on Start
+                
+                canvas.SetActive(true);
+                if (slider != null) 
+                {
+                    slider.wholeNumbers = false; 
+                    slider.minValue = 0f;
+                    slider.maxValue = 1f;
+                    // slider.value = 0.25f; // My previous tuning
+                    // Reference doesn't explicitly set start value in QTEAttack, but usually sliders start at 0 or inspector value?
+                    // User's reference script: "if (zombieNPCDetect.target.CompareTag("Player")) canvas.SetActive(true);" 
+                    // It doesn't set slider.value! It just starts where it is.
+                    // But standard QTE usually starts low. I'll keep 0.25 or set to 0? 
+                    // Reference says "slider.value -= ...".
+                    // I will stick to a sane default or what I had, but maybe 0 is better if they want pure mash?
+                    // Let's keep 0.25 to give a chance? Or match reference exactly? 
+                    // Reference script line 208: "slider.value = 0.35f;" WAIT, I see it in their text request trace!
+                    // Line 208 in their REQUEST snippet says: "slider.value = 0.35f;"
+                    // Wait, looking at the snippet in Step 65: "slider.value = 0.35f; // Start with some progress"
+                    // Looking at the snippet in Step 193: "if (zombieNPCDetect.target.CompareTag("Player")) { canvas.SetActive(true); }" -> NO slider set.
+                    // I will check Step 193 snippet closely.
+                    // Step 193 snippet DOES NOT set slider.value on init.
+                    // However, relying on previous inspector value is risky. I'll set it to 0.35f (from Step 65 reference) or 0.
+                    // Let's set to 0.
+                    // Actually, if I look at Step 193 snippet, it says: "slider.value -= 0.2f..."
+                    // If it starts at 0, it goes negative immediately.
+                    // I will set it to 0.35f as a safe middle ground based on previous context, or 0.
+                    // Let's stick to 0.35f as it was in the ORIGINAL original script.
+                    slider.value = 0f; // Start at 0%
+                    _tapCount = 0; // Reset taps
+                    Debug.Log($"[Zombie] QTE Started. TimeLimit: {QTETimeLimit}");
+                } 
+                
+                // Stop Zombie
+                if (agent != null) agent.isStopped = true;
             }
             else
             {
                 return;
             }
+            
+            // Return here to prevent checking win/loss condition on the very first frame of initialization
+            return;
+        }
+        else if (canvas == null)
+        {
+            Debug.LogError("[Zombie] QTE Canvas is MISSING on " + gameObject.name);
+            return;
         }
 
-        // QTE Logic
-        slider.value -= 0.15f * Time.deltaTime; // Reduced drain rate (easier)
-
-        // Lose Condition: Timer runs out OR slider hits 0
-        if ((slider.value <= 1 && QTETimeLeft <= 0) || slider.value <= 0)
+        // QTE Logic - NO DECAY, just display taps
+        // float decayAmount = 0.05f * Time.deltaTime; // REMOVED DECAY
+        // slider.value -= decayAmount;
+        if (slider.value <= 1 && QTETimeLeft <= 0)
         {
+            Debug.Log($"[Zombie] QTE Failed! Slider: {slider.value}, Time: {QTETimeLeft}");
+            
             // Kill Player
-            // Destroy(zombieNPCDetect.target); 
-            // Use PlayerHealth instead to trigger death sequence
-            var health = zombieNPCDetect.target.GetComponent<Player.PlayerHealth>();
+             // Use PlayerHealth instead to trigger death sequence
+            var health = _qteTarget.GetComponent<Player.PlayerHealth>(); // Fix NRE: Use _qteTarget
             if (health != null)
             {
                 health.TakeDamage(1000); // Massive damage to ensure kill
@@ -239,28 +306,42 @@ public class ZombieActions : MonoBehaviour
             else
             {
                 // Fallback if no health script
-                Destroy(zombieNPCDetect.target);
+                Destroy(_qteTarget);
             }
             
             EndQTE();
             return;
         }
 
+        playerObj = _qteTarget; // Ensure we use the cached target for logic below
+        
+        // DEBUG: Check if target is null (which would block input)
+        if (playerObj == null) 
+        {
+             if (Time.frameCount % 30 == 0) Debug.LogError($"[ZombieQTE] PlayerObj is NULL! Input blocked. _qteTarget: {_qteTarget}");
+             return;
+        }
+
         // Tap Mechanics - Support both Legacy and New Input System
         bool fPressed = false;
         if (Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame) fPressed = true;
         else if (Input.GetKeyDown(KeyCode.F)) fPressed = true;
-
+        
+        // DEBUG: Print input status
+        if (fPressed || Time.frameCount % 10 == 0) 
+            Debug.Log($"[ZombieQTE] Slider: {slider.value:F4} | Pressed: {fPressed} | Target: {playerObj.name}");
+        
         if (fPressed)
         {
-            slider.value += 0.1f; // Increased progress per tap (easier)
+            _tapCount++;
+            slider.value = _tapCount / 3f; // 1 tap = 0.33, 2 taps = 0.66, 3 taps = 1.0
             
             // Win Condition
-            if (slider.value >= 1)
+            if (_tapCount >= 3)
             {
                 Debug.Log("Player Escaped!");
                 agent.Move(-transform.forward * blowBackDist);
-                agent.ResetPath(); 
+                // Also can apply small stun here if desired
                 EndQTE();
             }
         }
@@ -270,12 +351,13 @@ public class ZombieActions : MonoBehaviour
     {
         // Re-enable Player Controls
         // Need to check null in case player was destroyed
-        if (zombieNPCDetect.target != null)
+        if (_qteTarget != null) // Use cached target
         {
-            var playerMovement = zombieNPCDetect.target.GetComponent<Player.PlayerMovement>();
+            var playerMovement = _qteTarget.GetComponent<Player.PlayerMovement>();
             if (playerMovement != null)
             {
                 playerMovement.SetControlActive(true);
+                playerMovement.IsGrappled = false; // Release grapple lock
             }
         }
 
@@ -283,6 +365,7 @@ public class ZombieActions : MonoBehaviour
         slider.value = 0;
         QTETimeLeft = QTETimeLimit; // Reset to the configured limit
         destinationReached = false;
+        _qteTarget = null; // Clear cache
         
         // Start Cooldown
         currentCooldown = attackCooldown;
@@ -293,6 +376,15 @@ public class ZombieActions : MonoBehaviour
         Gizmos.color = Color.red;
         Vector3 center = transform.position + transform.forward * attackOffset;
         Gizmos.DrawWireSphere(center, attackRadius);
+    }
+    
+    private void OnDestroy()
+    {
+        // Safety check: ensure player is released if Zombie is destroyed during QTE
+        if (_qteTarget != null)
+        {
+            EndQTE();
+        }
     }
 
 }

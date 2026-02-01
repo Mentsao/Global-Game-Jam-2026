@@ -145,9 +145,9 @@ public class PoliceNPC : MonoBehaviour
     {
         if (player == null) return;
 
-        // Check for Police Mask
+        // Check for Police Mask OR Government Mask (Immunity)
         PlayerPickup pickup = player.GetComponent<PlayerPickup>();
-        if (pickup != null && pickup.CurrentMaskType == Items.Masks.MaskType.Police)
+        if (pickup != null && (pickup.CurrentMaskType == Items.Masks.MaskType.Police || pickup.CurrentMaskType == Items.Masks.MaskType.Government))
         {
             // Player is disguised! Stop chasing.
             Debug.Log("[Police] Player is disguised as Police. Switching to Patrol.");
@@ -177,7 +177,23 @@ public class PoliceNPC : MonoBehaviour
 
     private void HandlePatrolLogic()
     {
-        // Random Roam
+        // 1. Dynamic Mask Check: If player is unmasked and nearby, resume chase
+        if (player != null && playerPickup != null)
+        {
+            // Resume chase only if NOT Police AND NOT Government
+            if (playerPickup.CurrentMaskType != Items.Masks.MaskType.Police && playerPickup.CurrentMaskType != Items.Masks.MaskType.Government)
+            {
+                float dist = Vector3.Distance(transform.position, player.position);
+                if (dist < patrolRadius)
+                {
+                    Debug.Log("[Police] Player uncovered! Resuming chase.");
+                    currentState = PoliceState.Chasing;
+                    return;
+                }
+            }
+        }
+
+        // 2. Random Roam
         if (!agent.pathPending && agent.remainingDistance < 0.5f)
         {
             _patrolTimer += Time.deltaTime;
@@ -194,8 +210,11 @@ public class PoliceNPC : MonoBehaviour
     private void FindPlayer()
     {
         GameObject p = GameObject.FindGameObjectWithTag("Player");
-        playerPickup = player.gameObject.GetComponent<PlayerPickup>();
-        if (p != null) player = p.transform;
+        if (p != null)
+        {
+            player = p.transform;
+            playerPickup = p.GetComponent<PlayerPickup>();
+        }
     }
 
     private void RemoveOneNPC()

@@ -62,6 +62,17 @@ public class ScorchedEarthManager : MonoBehaviour
     {
         if (isScorchedEarthActive) return; // Already active
 
+        // Check for Government Mask Immunity
+        if (_playerTransform != null)
+        {
+            var pickup = _playerTransform.GetComponent<Player.PlayerPickup>();
+            if (pickup != null && pickup.CurrentMaskType == Items.Masks.MaskType.Government)
+            {
+                Debug.Log("[Scorched Earth] BLOCKED by Government Mask.");
+                return;
+            }
+        }
+
         Debug.Log("[Scorched Earth] SYSTEM ACTIVATED! SWARM INITIATED.");
         isScorchedEarthActive = true;
         
@@ -109,10 +120,9 @@ public class ScorchedEarthManager : MonoBehaviour
         Collider[] hits = Physics.OverlapSphere(_playerTransform.position, detectionRadius, npcLayer);
         foreach (var hit in hits)
         {
-            // Filter: Must represent an NPC
-            // Exclude Government
-            if (hit.GetComponent<GovernmentOfficial>() != null) continue;
-            if (hit.GetComponentInParent<GovernmentOfficial>() != null) continue;
+            // Exclude Government and Healthcare (they have their own logic)
+            if (hit.GetComponent<GovernmentOfficial>() != null || hit.GetComponentInParent<GovernmentOfficial>() != null) continue;
+            if (hit.GetComponent<HealthcarePersonnel>() != null || hit.GetComponentInParent<HealthcarePersonnel>() != null) continue;
 
             // Must have NavMeshAgent
             NavMeshAgent agent = hit.GetComponent<NavMeshAgent>();

@@ -10,7 +10,7 @@ public class GovernmentOfficial : MonoBehaviour
     public bool isTracking = false;
 
     [Header("Stats")]
-    public float health = 100f;
+    public float health = 50f;
 
     [Header("Vulnerability Settings")]
     [Tooltip("Angle cone for Front/Back invulnerability (in degrees). Default 60 means +/- 60 degrees from Forward/Backward.")]
@@ -119,10 +119,27 @@ public class GovernmentOfficial : MonoBehaviour
         }
     }
 
+    [Header("Loot")]
+    [Tooltip("Assign GovtMask.prefab here")]
+    [SerializeField] private GameObject maskPrefab;
+
     private void Die()
     {
         Debug.Log("[Government] Official Eliminate.");
-        // Logic for dropping loot/mask can go here
+        
+        // Guaranteed Drop
+        if (maskPrefab != null)
+        {
+            Instantiate(maskPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
+            Debug.Log("[Government] Mask Dropped.");
+        }
+        else
+        {
+            Debug.LogError("[Government] Mask Prefab NOT ASSIGNED in Inspector!");
+        }
+
+        // Instant Hide
+        gameObject.SetActive(false);
         Destroy(gameObject);
     }
 

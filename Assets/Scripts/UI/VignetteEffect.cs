@@ -201,6 +201,9 @@ namespace UI
                 }
             }
 
+            // Debug Logic
+            if (Time.frameCount % 60 == 0) Debug.Log($"[Vignette] Zombies: {ZombieNPCDetect.AllZombies.Count}, AnyInRange: {isAnyEnemyInRange}, Alpha: {_currentAlpha}");
+
             if (isAnyEnemyInRange)
             {
                 _currentAlpha += darkenSpeed * Time.deltaTime;

@@ -63,6 +63,9 @@ namespace Player
             _inputActions.Player.Jump.performed -= OnJump;
             _inputActions.Player.Disable();
         }
+        
+        // Prevents multiple zombies from grappling the same player
+        public bool IsGrappled { get; set; } = false;
 
         public void SetControlActive(bool active)
         {

@@ -26,15 +26,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: f706c168d3c199344b1c1bbd34632947, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 86.915
+      value: 92.4
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: f706c168d3c199344b1c1bbd34632947, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.0000006782492
+      value: 0.34917322
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: f706c168d3c199344b1c1bbd34632947, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -10.63
+      value: 194.85066
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: f706c168d3c199344b1c1bbd34632947, type: 3}
       propertyPath: m_LocalRotation.w
@@ -322,6 +322,7 @@ MonoBehaviour:
   inFront: 0
   inFOV: 0
   inRange: 0
+  forgetTime: 3
 --- !u!114 &6783662428892270183
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -344,7 +345,7 @@ MonoBehaviour:
   attackLayer:
     serializedVersion: 2
     m_Bits: 8256
-  canvas: {fileID: 0}
+  canvas: {fileID: 6483280694726615647, guid: 6578bc6b5b5e78549aacdeebb0df78f3, type: 3}
   slider: {fileID: 0}
   walkSpeed: 2
   runSpeed: 6

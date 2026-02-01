@@ -27,10 +27,21 @@ public class ZombieNPCDetect : MonoBehaviour
         AllZombies.Remove(this);
     }
 
+    [Header("Stealth Settings")]
+    [SerializeField] private float forgetTime = 3f;
+    private float _forgetTimer;
+    private float _baseRange;
+
+    private void Start()
+    {
+        _baseRange = rangeOfView;
+    }
+
     void Update()
     {
+        UpdateStealthAdjustments();
         DetectAll(transform.position, rangeOfView);
-        if (inFront)
+        if (inFront && target != null)
         {
             CheckFieldOfView();
             CheckIfInRange();
@@ -38,9 +49,48 @@ public class ZombieNPCDetect : MonoBehaviour
             if (inFOV && inRange)
             {
                 LookAtPlayer();
+                _forgetTimer = 0f;
+            }
+            else
+            {
+                HandleForgetting();
             }
         }
-        
+        else
+        {
+            // If we are very close to the target, don't forget so easily
+            if (target != null && Vector3.Distance(transform.position, target.transform.position) < 3.0f)
+            {
+                 _forgetTimer = 0f; // Stay locked on
+            }
+            else
+            {
+                HandleForgetting();
+            }
+        }
+    }
+
+    private void UpdateStealthAdjustments()
+    {
+        if (UI.StealthManager.Instance != null)
+        {
+            float stealth = UI.StealthManager.Instance.CurrentStealth;
+            // Base range is scaled by stealth. Minimum 2.5m even if totally stealthy.
+            float multiplier = Mathf.Lerp(0.5f, 1f, stealth / 100f);
+            rangeOfView = Mathf.Max(2.5f, _baseRange * multiplier);
+        }
+    }
+
+    private void HandleForgetting()
+    {
+        _forgetTimer += Time.deltaTime;
+        if (_forgetTimer >= forgetTime)
+        {
+            inFOV = false;
+            inRange = false;
+            inFront = false;
+            target = null;
+        }
     }
 
     public void DetectAll(Vector3 center, float radius)

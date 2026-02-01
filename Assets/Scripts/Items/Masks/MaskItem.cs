@@ -16,6 +16,16 @@ namespace Items.Masks
         [Header("Mask Settings")]
         [SerializeField] private MaskType maskType = MaskType.None;
 
+        [Header("Durability Settings")]
+        [SerializeField] private float maxDurability = 100f;
+        public float currentDurability;
+
         public MaskType Type => maskType;
+        public float MaxDurability => maxDurability;
+
+        private void Awake()
+        {
+            currentDurability = maxDurability;
+        }
     }
 }

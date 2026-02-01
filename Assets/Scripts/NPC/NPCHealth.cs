@@ -7,7 +7,7 @@ public class NPCHealth : MonoBehaviour
     [SerializeField] private int currentHealth;
 
     [Header("Death Settings")]
-    [SerializeField] private float destroyDelay = 5.0f;
+    [SerializeField] private float destroyDelay = 0f;
     [Tooltip("If true, requires ZombieAction or specific scripts to handle animation/logic before destroy.")]
     [SerializeField] private bool handleDeathLogic = true;
 
@@ -41,7 +41,7 @@ public class NPCHealth : MonoBehaviour
             Animator anim = GetComponentInChildren<Animator>();
             if (anim != null)
             {
-                anim.SetTrigger("Hit"); // Generic hit trigger if exists
+                anim.SetTrigger("Idle"); // Generic hit trigger if exists
             }
         }
     }
@@ -89,6 +89,9 @@ public class NPCHealth : MonoBehaviour
             anim.SetBool("isDead", true);
             anim.CrossFade("Death", 0.2f); // Generic Death state name
         }
+
+        // Instant Hide
+        gameObject.SetActive(false);
 
         // Destroy
         Destroy(gameObject, destroyDelay);
