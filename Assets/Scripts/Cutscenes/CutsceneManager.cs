@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.Video;
-using UnityEngine.SceneManagement; 
 using UnityEngine.Events; 
 
 public class CutsceneManager : MonoBehaviour
