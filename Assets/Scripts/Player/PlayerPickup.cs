@@ -35,12 +35,14 @@ namespace Player
         [Header("Tutorial Checks")]
         public bool isWeapon = false;
         PlayerDeath playerDeath;
+        [SerializeField] private int maskFoundCount = 0;
 
         private void Awake()
         {
             _inputActions = new InputSystem_Actions();
             _cameraTransform = Camera.main.transform;
             playerDeath = GetComponent<PlayerDeath>();
+            maskFoundCount = 0;
         }
 
         private void OnEnable()
@@ -188,6 +190,12 @@ namespace Player
                 }
                 else if (isMask)
                 {
+                    maskFoundCount++;
+                    if (maskFoundCount == 1) 
+                    {
+                        Tutorial tutorial = GameObject.Find("TutorialManager").GetComponent<Tutorial>();
+                        tutorial.PutOnMaskTutorial();
+                    }
                     // Find first empty mask slot or replace current if full
                     int targetSlot = 3; // Default to first mask slot
                     if (_maskSlot1 == null) targetSlot = 3;

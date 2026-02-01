@@ -71,7 +71,7 @@ public class Tutorial : MonoBehaviour
         }
         else if (playerPickup.isWeapon)
         {
-            pickUpKnifeTutorial.SetActive(false);
+            Destroy(pickUpKnifeTutorial);
         }
     }
 
@@ -113,5 +113,12 @@ public class Tutorial : MonoBehaviour
     public void HighlightMasksTutorial()
     {
 
+    }
+
+    public void PutOnMaskTutorial()
+    {
+        dialogueText.text = "Left-click to put on and take off mask";
+        Animator dialogueAnim = dialogueText.GetComponent<Animator>();
+        dialogueAnim.SetTrigger("DialogueTrigger");
     }
 }
