@@ -63,8 +63,18 @@ namespace UI
             
             Time.timeScale = 1f;
             
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
+            string sceneName = SceneManager.GetActiveScene().name;
+            if (sceneName != "TitleScene")
+            {
+                Cursor.visible = false;
+                Cursor.lockState = CursorLockMode.Locked;
+            }
+            else
+            {
+                // Title Scene: Stay visible
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+            }
         }
 
         public void OpenSettings()

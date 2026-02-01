@@ -48,10 +48,16 @@ public class SettingsPanel : MonoBehaviour
 
     private void Update()
     {
+        // Only handle Escape if we are independent (not called from PauseMenu)
+        // actually, simpler to check if panel is active.
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             if (panelContent != null && panelContent.activeSelf)
+            {
+                // In GameScene, PauseMenu might also listen to Escape.
+                // We handle it here to ensure Settings closes first.
                 CloseSettings();
+            }
         }
     }
 
@@ -73,16 +79,30 @@ public class SettingsPanel : MonoBehaviour
         if (panelContent != null)
             panelContent.SetActive(false);
 
+        string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        bool isTitle = sceneName == "TitleScene";
+
         if (previousPanel != null)
         {
             previousPanel.SetActive(true);
-            // Don't change timeScale or cursor yet, assume previous panel handles its own state
+            // Don't change timeScale or cursor yet, assume previous panel (like PauseMenu) handles its own state
         }
         else
         {
-            Time.timeScale = 1f; // Resume game
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
+            // If we opened Settings directly (e.g. from Title screen button without a back button ref)
+            if (!isTitle)
+            {
+                Time.timeScale = 1f; 
+                Cursor.visible = false;
+                Cursor.lockState = CursorLockMode.Locked;
+            }
+            else
+            {
+                // Title Scene: Keep cursor visible
+                Time.timeScale = 1f;
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+            }
         }
 
         previousPanel = null;

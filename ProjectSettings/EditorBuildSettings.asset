@@ -12,14 +12,14 @@ EditorBuildSettings:
     path: Assets/Scenes/MicaScene/Tutorial.unity
     guid: c6d88c3d9a009a941a564ef166a04fae
   - enabled: 1
-    path: Assets/Scenes/GameScene.unity
-    guid: 769295949b81b2341b28965c928c9267
-  - enabled: 1
     path: Assets/Scenes/OpeningScene.unity
     guid: d33a144591a37554fa15edc645e78122
   - enabled: 1
     path: Assets/Scenes/TitleScene.unity
     guid: 4f40580d49c7833409c2765835c4fe20
+  - enabled: 1
+    path: Assets/Scenes/GameScene.unity
+    guid: 769295949b81b2341b28965c928c9267
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
