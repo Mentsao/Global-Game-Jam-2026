@@ -45,16 +45,23 @@ public class Tutorial : MonoBehaviour
             animTime -= Time.deltaTime;
             bigKnifeTime -= Time.deltaTime;
 
-            if(bigPickUpKnifeText.activeSelf) 
+            if (bigPickUpKnifeText.activeSelf)
             {
                 GameObject player = GameObject.FindGameObjectWithTag("Player");
 
-                float dist = Vector3.Distance(player.transform.position, knife.transform.position);
+                Vector3 dir = knife.transform.position - player.transform.position;
+                dir.y = 0f; 
 
-                if (dist > 5f)
+                if (dir.sqrMagnitude > 0.01f)
                 {
-                    player.transform.LookAt(knife.transform);
+                    Quaternion targetRot = Quaternion.LookRotation(dir);
+                    player.transform.rotation = Quaternion.Slerp(
+                        player.transform.rotation,
+                        targetRot,
+                        Time.deltaTime * 4f
+                    );
                 }
+
                 return;
             }
 

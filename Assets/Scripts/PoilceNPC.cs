@@ -25,7 +25,7 @@ public class PoliceNPC : MonoBehaviour
     [SerializeField] private Transform player;
 
     [Header("Line Settings")]
-    [SerializeField] private List<GameObject> npcLine = new List<GameObject>();
+    public List<GameObject> npcLine = new List<GameObject>();
     [SerializeField] private Transform lineStartPoint;
     [SerializeField] private float spacing = 2f;
     [SerializeField] private float moveSpeed = 5f;

@@ -442,7 +442,6 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 7613563909910085564}
   - {fileID: 6759464295881752677}
   - {fileID: 9006987050782244111}
   - {fileID: 8192444208001354406}
@@ -454,6 +453,7 @@ RectTransform:
   - {fileID: 9111502416554457937}
   - {fileID: 1256798093261689217}
   - {fileID: 7024038888990738796}
+  - {fileID: 7613563909910085564}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -721,7 +721,7 @@ GameObject:
   - component: {fileID: 3894002179195881396}
   - component: {fileID: 7644560852209019958}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: BlackPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -767,7 +767,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
