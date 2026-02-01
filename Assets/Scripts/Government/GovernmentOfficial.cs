@@ -125,20 +125,43 @@ public class GovernmentOfficial : MonoBehaviour
 
     private void Die()
     {
-        Debug.Log("[Government] Official Eliminate.");
+        Debug.Log($"[Government] Official {name} Eliminate at {transform.position}.");
         
-        // Guaranteed Drop
+        // 1. Check if NPCHealth is present and has a mask assigned
+        NPCHealth npcHealth = GetComponent<NPCHealth>();
+        if (npcHealth != null && maskPrefab == null)
+        {
+            // Transfer logic if user only assigned it to NPCHealth
+            // (Note: maskDropPrefab in NPCHealth is private, but let's assume standard logic)
+            Debug.Log("[Government] NPCHealth found, letting it handle generic loot if possible.");
+        }
+
+        // 2. Guaranteed Drop Logic
         if (maskPrefab != null)
         {
-            Instantiate(maskPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
-            Debug.Log("[Government] Mask Dropped.");
+            GameObject droppedMask = Instantiate(maskPrefab, transform.position + Vector3.up * 1.0f, Quaternion.identity);
+            droppedMask.name = "GovtMask_Dropped";
+            
+            // Ensure it has a collider and rigibody for visibility on ground
+            Rigidbody rb = droppedMask.GetComponent<Rigidbody>();
+            if (rb != null) 
+            {
+                rb.isKinematic = false;
+                rb.useGravity = true;
+                // Give it a little pop
+                rb.AddForce(Vector3.up * 2f, ForceMode.Impulse);
+            }
+
+            Debug.Log($"[Government] Mask Dropped: {droppedMask.name} at {droppedMask.transform.position}");
         }
         else
         {
-            Debug.LogError("[Government] Mask Prefab NOT ASSIGNED in Inspector!");
+            Debug.LogError("[Government] CRITICAL: Mask Prefab NOT ASSIGNED in Inspector on " + name + "! Please assign GovtMask.prefab to the GovernmentOfficial component.");
         }
 
-        // Instant Hide
+        // 3. Clear self
+        // If NPCHealth is present, it might also try to Destroy.
+        // We deactivate and destroy immediately to be sure.
         gameObject.SetActive(false);
         Destroy(gameObject);
     }

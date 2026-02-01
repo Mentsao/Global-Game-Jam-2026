@@ -9,7 +9,8 @@ public class PlayerDeath : MonoBehaviour
     private void OnDestroy()
     {
         deathCount++;
-        SceneManager.LoadScene("GameScene");
+        // Load the currently active scene instead of a hardcoded one
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void DocumentFound()

@@ -68,20 +68,14 @@ namespace Player
             
             Debug.Log("YOU DIED");
 
-            // Disable Movement
-            var movement = GetComponent<PlayerMovement>();
-            if (movement != null) movement.enabled = false;
+            // Ensure game is NOT paused (prevents Invoke/Destroy logic hangs)
+            Time.timeScale = 1f;
 
-            var attack = GetComponent<PlayerAttack>();
-            if (attack != null) attack.enabled = false;
+            // Optional: Notify UI if standard Fail UI exists (skipped for now as per plan)
 
-            // Reload Scene after delay
-            Invoke(nameof(ReloadScene), 3f);
-        }
-
-        private void ReloadScene()
-        {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            // Trigger restart by destroying the object
+            // This will fire OnDestroy in PlayerDeath.cs
+            Destroy(gameObject);
         }
 
         public void Heal(int amount)
