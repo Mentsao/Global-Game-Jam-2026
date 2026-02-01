@@ -73,6 +73,7 @@ GameObject:
   - component: {fileID: 2164152356805947656}
   - component: {fileID: 5134811279630051567}
   - component: {fileID: 5555475271320095590}
+  - component: {fileID: 1103526671635536302}
   m_Layer: 13
   m_Name: Player
   m_TagString: Player
@@ -271,6 +272,11 @@ MonoBehaviour:
   slashRotation: {x: 80, y: 0, z: 0}
   slashMoveOffset: {x: 0, y: 0, z: 2}
   slashDuration: 0.25
+  attackDamage: 1
+  attackRange: 2.5
+  attackLayer:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!114 &5134811279630051567
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -307,6 +313,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Player.PlayerHealth
   maxHealth: 1
   currentHealth: 0
+--- !u!114 &1103526671635536302
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1007246993073906416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b369497e868ece748aeaa434421618c4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDeath
 --- !u!1 &2109172963043345129
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,20 +1,15 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerDeath : MonoBehaviour
 {
     public static int deathCount;
     public static int documentCount;
 
-    private SceneLoader sceneLoader;
-
-    private void Awake()
-    {
-        sceneLoader = GameObject.Find("SceneManager").GetComponent<SceneLoader>();
-    }
     private void OnDestroy()
     {
         deathCount++;
-        sceneLoader.LoadGameScene();
+        SceneManager.LoadScene("GameScene");
     }
 
     public void DocumentFound()

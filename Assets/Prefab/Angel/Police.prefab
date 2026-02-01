@@ -286,9 +286,11 @@ MonoBehaviour:
   moveSpeed: 5
   lineTime: 5
   timer: 0
+  hasEntered: 0
   patrolRadius: 15
   patrolWaitTime: 3
   interactionDistance: 2
+  dialogue: {fileID: 0}
 --- !u!195 &7325462418005608922
 NavMeshAgent:
   m_ObjectHideFlags: 0

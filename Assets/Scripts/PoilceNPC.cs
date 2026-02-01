@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using Player;
 using Unity.VisualScripting;
+using TMPro;
 
 // Make sure your Filename is "PoilceNPC.cs" (typo preserved to match file)
 public class PoliceNPC : MonoBehaviour
@@ -32,6 +33,7 @@ public class PoliceNPC : MonoBehaviour
     [SerializeField] private float timer;
     public bool hasEntered = false;
     private PlayerPickup playerPickup;
+    private int count = 0;
 
 
     [Header("Patrol Settings")]
@@ -40,7 +42,9 @@ public class PoliceNPC : MonoBehaviour
     private float _patrolTimer;
 
     [Header("Interaction")]
-    [SerializeField] private float interactionDistance = 2.0f;
+    [SerializeField] private float interactionDistance = 2f;
+    [SerializeField] private GameObject dialogue;
+    private TextMeshProUGUI dialogueText;
 
     private AudioSource audioSource;
 
@@ -51,6 +55,8 @@ public class PoliceNPC : MonoBehaviour
     {
         if (agent == null) agent = GetComponent<NavMeshAgent>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
+        dialogue = GameObject.Find("DialogueText");
+        dialogueText = dialogue.GetComponent<TextMeshProUGUI>();
     }
 
     private void Start()
@@ -96,7 +102,13 @@ public class PoliceNPC : MonoBehaviour
 
     private void HandleLineLogic()
     {
-        if (!playerPickup.isWeapon) return;
+        if (playerPickup.isWeapon)
+        {
+            count++;
+        }
+
+        if (count <= 0) return;
+
         if (!hasEntered) return;
 
         // Waiting for line to clear
@@ -113,6 +125,7 @@ public class PoliceNPC : MonoBehaviour
         // Check Exit Condition
         if (npcLine.Count == 0 || debugForceChase)
         {
+            hasEntered = false;
             // Debug.Log("[PoliceNPC] Line Empty! Switching to CHASE.");
             // Debug.Log("[PoliceNPC] Line Empty! Switching to CHASE.");
             currentState = PoliceState.Chasing;
@@ -144,15 +157,21 @@ public class PoliceNPC : MonoBehaviour
         }
 
         agent.isStopped = false;
-        agent.stoppingDistance = 0.8f; 
+        agent.stoppingDistance = 5f; 
         agent.SetDestination(player.position);
 
         // Optional: Manual Distance Check for Interaction
         float dist = Vector3.Distance(transform.position, player.position);
-        if (dist <= interactionDistance)
+        if (dist <= agent.stoppingDistance)
         {
-             // We are close enough to "Touch"
-             CheckForDocument(player.gameObject);
+            animator.Play("Idle");
+            // We are close enough to "Touch"
+            CheckForDocument(player.gameObject);
+        }
+        else
+        {
+            animator.Play("Running");
+            agent.SetDestination(player.position);
         }
     }
 
@@ -286,21 +305,27 @@ public class PoliceNPC : MonoBehaviour
                     if (isDoc)
                     {
                         // Success!
-                        Debug.Log("Police: Document Verified! Switching to Patrol.");
-                        pickup.ConsumeHeldItem();
+                        dialogueText.text = "Police: Document Verified! Switching to Patrol.";
+                        Animator dialogueAnim = dialogue.GetComponent<Animator>();
+                        dialogueAnim.SetTrigger("DialogueTrigger");
                         AudioManager.Instance.PlayPoliceDecision(true);
                         currentState = PoliceState.Patrolling; 
                         agent.ResetPath(); // Stop chasing immediately
+                        pickup.ConsumeHeldItem();
                     }
                     else
                     {
-                        Debug.Log("Police: Wrong Item! (Need 'Document' tag)");
+                        dialogueText.text = "Police: Wrong Item! (Need 'Document' tag)";
+                        Animator dialogueAnim = dialogue.GetComponent<Animator>();
+                        dialogueAnim.SetTrigger("DialogueTrigger");
                         AudioManager.Instance.PlayPoliceDecision(false);
                     }
                 }
                 else
                 {
-                    Debug.Log("Police: Show me your papers! (Hands Empty)");
+                    dialogueText.text = "Police: Show me your papers! (Hands Empty)";
+                    Animator dialogueAnim = dialogue.GetComponent<Animator>();
+                    dialogueAnim.SetTrigger("DialogueTrigger");
                 }
             }
         }
